@@ -18,7 +18,7 @@ public class EyeDetector : MonoBehaviour
     [SerializeField, TooltipAttribute("Set FPS of WebCamTexture.")]
     public int requestedFPS = 30;
 
-    public float ipdM = 0.064f;
+    public float ipdCM = 6.4f;
     public int focalDistancePx = 711;
 
     private FaceLandmarkDetector _faceLandmarkDetector;
@@ -33,10 +33,10 @@ public class EyeDetector : MonoBehaviour
     private Vector2 _leftEyePx;
     private Vector2 _rightEyePx;
 
-    public Vector3 leftEyeM;
-    public Vector3 rightEyeM;
-    private Vector3 _leftEyeMUpdate;
-    private Vector3 _rightEyeMUpdate;
+    public Vector3 leftEyeCM;
+    public Vector3 rightEyeCM;
+    private Vector3 _leftEyeCMUpdate;
+    private Vector3 _rightEyeCMUpdate;
 
     [Range(0.01f, 1.0f)]
     public float filterStrength = 0.5f;
@@ -129,22 +129,22 @@ public class EyeDetector : MonoBehaviour
         DrawLandmarkDetectionResult(detectLandmarkResult, colors, new Color32(255, 0, 0, 255), 3);
 
         var ipdPx = (int)(_leftEyePx - _rightEyePx).magnitude;
-        var eyeDistanceM = (focalDistancePx * ipdM) / ipdPx;
+        var eyeDistanceCM = (focalDistancePx * ipdCM) / ipdPx;
 
         var centerPx = new Vector2Int(_texture.width / 2, _texture.height / 2);
         var leftToCenter = _leftEyePx - centerPx;
         var rightToCenter = _rightEyePx - centerPx;
 
-        _rightEyeMUpdate.x = -_pixelToMeter(eyeDistanceM, (int)rightToCenter.x);
-        _rightEyeMUpdate.y = -_pixelToMeter(eyeDistanceM, (int)rightToCenter.y);
-        _rightEyeMUpdate.z = -eyeDistanceM;
+        _rightEyeCMUpdate.x = -_pixelToMeter(eyeDistanceCM, (int)rightToCenter.x);
+        _rightEyeCMUpdate.y = -_pixelToMeter(eyeDistanceCM, (int)rightToCenter.y);
+        _rightEyeCMUpdate.z = -eyeDistanceCM;
 
-        _leftEyeMUpdate.x = -_pixelToMeter(eyeDistanceM, (int)leftToCenter.x);
-        _leftEyeMUpdate.y = -_pixelToMeter(eyeDistanceM, (int)leftToCenter.y);
-        _leftEyeMUpdate.z = -eyeDistanceM;
+        _leftEyeCMUpdate.x = -_pixelToMeter(eyeDistanceCM, (int)leftToCenter.x);
+        _leftEyeCMUpdate.y = -_pixelToMeter(eyeDistanceCM, (int)leftToCenter.y);
+        _leftEyeCMUpdate.z = -eyeDistanceCM;
 
-        rightEyeM = Vector3.Lerp(rightEyeM, _rightEyeMUpdate, filterStrength);
-        leftEyeM = Vector3.Lerp(leftEyeM, _leftEyeMUpdate, filterStrength);
+        rightEyeCM = Vector3.Lerp(rightEyeCM, _rightEyeCMUpdate, filterStrength);
+        leftEyeCM = Vector3.Lerp(leftEyeCM, _leftEyeCMUpdate, filterStrength);
 
         //draw face rect
         if (drawRect)

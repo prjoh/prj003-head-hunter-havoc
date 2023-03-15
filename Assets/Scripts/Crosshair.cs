@@ -28,7 +28,7 @@ public class Crosshair : MonoBehaviour
         _ray.origin = _camera.position;
         _ray.direction = _camera.forward;
 
-        if (screenCollider.Raycast(_ray, out var hitScreen, 10.0f))
+        if (screenCollider.Raycast(_ray, out var hitScreen, 200.0f))
         {
             var position = sphere.position;
             position.x = Mathf.Min(Mathf.Max(projection.left, -hitScreen.point.x), projection.right);
@@ -37,15 +37,15 @@ public class Crosshair : MonoBehaviour
         }
 
         _ray.direction = (sphere.position - _camera.position).normalized;
-        if (Physics.Raycast(_ray, out var hitObject, 10.0f, mask.value))
+        if (Physics.Raycast(_ray, out var hitObject, 200.0f, mask.value))
         {
             Debug.Log($"Hit something: {hitObject.collider.gameObject.name}");
             sphere2.position = hitObject.point;
 
             var l1p0 = line1.GetPosition(0);
-            var l1p1 = l1p0 + (line1.gameObject.transform.InverseTransformPoint(sphere2.position) - l1p0).normalized * 0.25f;
+            var l1p1 = l1p0 + (line1.gameObject.transform.InverseTransformPoint(sphere2.position) - l1p0).normalized * 25.0f;
             var l2p0 = line2.GetPosition(0);
-            var l2p1 = l2p0 + (line2.gameObject.transform.InverseTransformPoint(sphere2.position) - l2p0).normalized * 0.25f;
+            var l2p1 = l2p0 + (line2.gameObject.transform.InverseTransformPoint(sphere2.position) - l2p0).normalized * 25.0f;
             line1.SetPosition(1, l1p1);
             line2.SetPosition(1, l2p1);
         }
@@ -54,9 +54,9 @@ public class Crosshair : MonoBehaviour
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawRay(_camera.position, _camera.forward);
+        Gizmos.DrawRay(_camera.position, _camera.forward * 100.0f);
 
         Gizmos.color = Color.green;
-        Gizmos.DrawRay(_camera.position, (sphere.position - _camera.position).normalized);
+        Gizmos.DrawRay(_camera.position, (sphere.position - _camera.position).normalized * 100.0f);
     }
 }

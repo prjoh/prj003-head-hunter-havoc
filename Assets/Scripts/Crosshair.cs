@@ -39,7 +39,7 @@ public class Crosshair : MonoBehaviour
         _ray.direction = (sphere.position - _camera.position).normalized;
         if (Physics.Raycast(_ray, out var hitObject, 200.0f, mask.value))
         {
-            Debug.Log($"Hit something: {hitObject.collider.gameObject.name}");
+            // Debug.Log($"Hit something: {hitObject.collider.gameObject.name}");
             sphere2.position = hitObject.point;
 
             var l1p0 = line1.GetPosition(0);

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -74,11 +75,11 @@ public class FightingState : State
         // var targetDistance = targetDelta.magnitude;
         var targetDirection = targetDelta.normalized;
 
-        var yaw = 90.0f + Mathf.Rad2Deg * Mathf.Atan2(-targetDirection.z, targetDirection.x);
+        var yaw = -90.0f + Mathf.Rad2Deg * Mathf.Atan2(-targetDirection.z, targetDirection.x);
         var pitch = 180.0f + Mathf.Rad2Deg * Mathf.Asin(targetDirection.y);
 
-        _ai.gameObject.transform.rotation = Quaternion.Euler(0.0f, yaw, 0.0f);
-        _ai.gameObject.transform.GetChild(0).transform.rotation = Quaternion.Euler(pitch, 0.0f, 0.0f);
+        var gun = _ai.gameObject.transform.GetChild(0).transform;
+        gun.rotation = Quaternion.Euler(pitch, yaw, 0.0f);
     }
 
     public override void Exit()
@@ -148,5 +149,13 @@ public class AIBehavior : PooledObject
 
         if (_destination)
             agent.destination = _destination.position;
+    }
+
+    private void OnDrawGizmos()
+    {
+        var targetDelta = player.transform.position - gameObject.transform.position;
+        var targetDirection = targetDelta.normalized;
+        Gizmos.color = Color.red;
+        Gizmos.DrawRay(transform.position, targetDirection * 100.0f);
     }
 }

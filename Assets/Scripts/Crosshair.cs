@@ -51,6 +51,11 @@ public class Crosshair : MonoBehaviour
         }
     }
 
+    public Vector3 GetTargetPosition()
+    {
+        return sphere2.position;
+    }
+
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;

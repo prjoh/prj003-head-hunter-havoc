@@ -46,8 +46,9 @@ public class RunningState : State
 
     public override void Update()
     {
-        if (Mathf.Approximately(Vector3.Distance(_ai.agent.pathEndPosition, _ai.transform.position) - 1.0f, 0.0f))
-            _ai.fsm.SwitchState("Fighting");
+        // TODO: Currently disabled for debugging purposes
+        // if (Mathf.Approximately(Vector3.Distance(_ai.agent.pathEndPosition, _ai.transform.position) - 1.0f, 0.0f))
+            // _ai.fsm.SwitchState("Fighting");
     }
 
     public override void Exit()
@@ -60,12 +61,14 @@ public class FightingState : State
     private AIBehavior _ai;
     private Vector3 _targetDirection;
     private CountdownTimer _shootTimer;
+    private Color _projectileColor;
 
     public FightingState(string name, AIBehavior ai) : base(name)
     {
         _ai = ai;
         _shootTimer = new CountdownTimer(2.5f);
         _shootTimer.Stop();
+        _projectileColor = new Color(191, 46, 0) * 0.0115f;
     }
 
     public override void Enter()
@@ -96,7 +99,7 @@ public class FightingState : State
 
     private void OnShootTimeout()
     {
-        _ai.projectilePool.Shoot(_ai.projectileSpawn.position, _targetDirection, 1600.0f);
+        _ai.projectilePool.Shoot(_ai.projectileSpawn.position, _targetDirection, 1600.0f, 0.5f, _projectileColor, "Player");
     }
 }
 
@@ -132,6 +135,7 @@ public class AIBehavior : PooledObject
     public readonly FiniteStateMachine fsm = new ();
     [HideInInspector] public GameObject player = null;
     [HideInInspector] public ProjectilePool projectilePool;
+    private HealthComponent _health;
 
     private Transform _destination = null;
     
@@ -147,6 +151,9 @@ public class AIBehavior : PooledObject
         projectilePool = FindObjectOfType<ProjectilePool>();
         if (projectilePool == null)
             Debug.LogError($"{GetType().Name}.OnConstruction: No ProjectilePool found! Please make sure a ProjectilePool is in your Scene.");
+        
+        _health = new HealthComponent();
+        _health.Init();
     }
 
     protected override void Init()
@@ -164,10 +171,18 @@ public class AIBehavior : PooledObject
         _destination = destination;
     }
 
+    public void TakeDamage(float percentage)
+    {
+        _health.TakeDamage(percentage);
+
+        if (!_health.IsAlive())
+            Destroy();
+    }
+
     public void Update()
     {
         fsm.Update();
-        currentState = fsm.CurrentState();
+        currentState = fsm.CurrentState();  // TODO: This is only for debugging purposes
 
         if (_destination)
             agent.destination = _destination.position;

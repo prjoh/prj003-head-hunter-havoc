@@ -1,6 +1,8 @@
 using UnityEngine;
 
 
+// TODO: THIS IS BROKEN!!
+//   This works only when leaving spawn points (although it also breaks if we manage to kill an enemy inside the spawn point!!!)
 public class ExclusiveColliderZone : MonoBehaviour
 {
     private Collider _colliderZone;
@@ -37,6 +39,7 @@ public class ExclusiveColliderZone : MonoBehaviour
     
     private void OnTriggerExit(Collider other)
     {
+        Debug.Log($"############# >>{GetType().Name}.OnTriggerExit {other.gameObject.name}");
         if (other == _blockingCollider)
         {
             Free();

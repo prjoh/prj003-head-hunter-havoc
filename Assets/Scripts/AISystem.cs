@@ -13,6 +13,8 @@ public class AISystem : PooledObject.ObjectPool
     private List<PooledObject> _enemies;
     private CountdownTimer _spawnCountdown;
 
+    private List<Vector3> debugDraw = new List<Vector3>();
+
     protected override void Awake()
     {
         base.Awake();
@@ -31,11 +33,13 @@ public class AISystem : PooledObject.ObjectPool
     private void OnEnable()
     {
         _spawnCountdown.Timeout += OnSpawnCountdown;
+        Projectile.EnvironmentHit += OnEnvironmentHit;
     }
 
     private void OnDisable()
     {
         _spawnCountdown.Timeout -= OnSpawnCountdown;
+        Projectile.EnvironmentHit -= OnEnvironmentHit;
     }
 
     private void Update()
@@ -92,10 +96,46 @@ public class AISystem : PooledObject.ObjectPool
     {
         // Debug.Log($"{GetType().Name}.OnSpawnCountdown: Countdown timeout.");
         if (LiveSize() >= maxEnemies)
+        {
+            _spawnCountdown.Stop(); // TODO: This is only temporary
             return;
+        }
 
         // Debug.Log($"{GetType().Name}.OnSpawnCountdown: Spawning Enemy!");
         var spawnZone = GetNextSpawn();
         SpawnEnemy(spawnZone);
     }
+
+    private void OnEnvironmentHit(Vector3 position)
+    {
+        debugDraw.Add(position);
+
+        const float hitRadius = 3.0f;  // TODO: Put this somewhere else?
+        foreach (var enemy in _enemies)
+        {
+            var aiPos = enemy.transform.position;
+            var aiHitDelta = hitRadius - Vector3.Distance(position, aiPos);
+            if (aiHitDelta <= 0.0f)
+                continue;
+
+            var dmgFactor = Mathf.Max(0.0f, aiHitDelta) / hitRadius;
+            var dmgPercentage = 0.5f * dmgFactor;
+
+            var ai = enemy.GetComponent<AIBehavior>();
+            ai.TakeDamage(dmgPercentage);
+
+            Debug.Log($"-------- Enemy-{enemy.gameObject.name} --------");
+            Debug.Log($"aiHitDelta: {aiHitDelta}");
+            Debug.Log($"dmgFactor: {dmgFactor}");
+            Debug.Log($"dmgPercentage: {dmgPercentage}");
+        }
+    }
+
+    // private void OnDrawGizmos()
+    // {
+    //     for (var i = debugDraw.Count - 1; i >= 0; --i)
+    //     {
+    //         Gizmos.DrawSphere(debugDraw[i], 3.0f);
+    //     }
+    // }
 }

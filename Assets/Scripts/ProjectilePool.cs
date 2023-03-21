@@ -26,10 +26,22 @@ public class ProjectilePool : PooledObject.ObjectPool
         }
     }
 
-    public void Shoot(Vector3 from, Vector3 direction, float speed)
+    public void Shoot(Vector3 from, Vector3 direction, float speed, float size, Color color, string target)
     {
         var obj = Create(from, Quaternion.identity);
         var projectile = obj.GetComponent<Projectile>();
+        projectile.SetStyle(size, color);
+        projectile.AddTarget(target);
+        projectile.AddForce(direction * speed);
+        _liveProjectiles.Add(projectile);
+    }
+
+    public void Shoot(Vector3 from, Vector3 direction, float speed, float size, Color color, IEnumerable<string> targets)
+    {
+        var obj = Create(from, Quaternion.identity);
+        var projectile = obj.GetComponent<Projectile>();
+        projectile.SetStyle(size, color);
+        projectile.AddTargets(targets);
         projectile.AddForce(direction * speed);
         _liveProjectiles.Add(projectile);
     }

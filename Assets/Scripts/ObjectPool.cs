@@ -1,11 +1,20 @@
+using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 
-public partial class PooledObject : MonoBehaviour
+public abstract partial class PooledObject : MonoBehaviour
 {
     private ObjectPool _pool;
     private PooledObject _nextPooledObject = null;
+
+    protected virtual void OnConstruction()
+    {
+    }
+
+    protected virtual void Init()
+    {
+    }
 
     public void Destroy()
     {
@@ -23,7 +32,7 @@ public partial class PooledObject : MonoBehaviour
     }
 }
 
-public partial class PooledObject
+public abstract partial class PooledObject
 {
     public abstract class ObjectPool : MonoBehaviour
     {
@@ -56,6 +65,8 @@ public partial class PooledObject
                 var current = _objectInstances[i].GetComponent<PooledObject>();
                 var next = _objectInstances[i+1].GetComponent<PooledObject>();
                 current.SetNextPooledObject(next);
+
+                current.OnConstruction();
             }
     
             var last = _objectInstances[poolSize - 1].GetComponent<PooledObject>();
@@ -79,6 +90,8 @@ public partial class PooledObject
 
             var available = _firstAvailable;
             _firstAvailable = available.GetNextPooledObject().GetComponent<PooledObject>();
+
+            available.Init();
 
             var obj = available.gameObject;
             obj.transform.position = position;

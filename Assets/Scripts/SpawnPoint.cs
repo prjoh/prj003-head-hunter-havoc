@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+// TODO: Instead make this an `ExclusiveColliderZone`
 public class SpawnPoint : MonoBehaviour
 {
     public Collider spawnZone;

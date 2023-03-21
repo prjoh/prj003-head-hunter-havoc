@@ -5,13 +5,13 @@ using Random = UnityEngine.Random;
 
 public class AISystem : PooledObject.ObjectPool
 {
-    public SpawnPoint[] spawns;
-    public int maxEnemies = 5;
+    public ExclusiveColliderZone[] spawns;
     public float spawnInterval = 5.0f;
+    public int maxEnemies = 5;
+    public ExclusiveColliderZone[] aiDestinations;
 
     private List<PooledObject> _enemies;
     private CountdownTimer _spawnCountdown;
-    // private bool _spawnEnemy = true;
 
     protected override void Awake()
     {
@@ -23,8 +23,7 @@ public class AISystem : PooledObject.ObjectPool
 
     private void Start()
     {
-        var enemy = Create(spawns[0].transform.position, spawns[0].transform.rotation);
-        _enemies.Add(enemy);
+        SpawnEnemy(spawns[0]);
 
         _spawnCountdown.Start();
     }
@@ -48,28 +47,47 @@ public class AISystem : PooledObject.ObjectPool
         // }
     }
 
-    private Transform GetNextSpawn()
+    private ExclusiveColliderZone GetNextSpawn()
     {
-        var liveColliders = new List<Collider>();
-        foreach (var enemy in _enemies)
-        {
-            var ai = enemy.gameObject.GetComponent<AIBehavior>();
-            liveColliders.Add(ai.collider);
-        }
-
-        var spawnPoints = new List<SpawnPoint>();
+        var spawnZones = new List<ExclusiveColliderZone>();
         foreach (var spawn in spawns)
         {
-            if (spawn.IsFree(liveColliders))
+            if (spawn.IsFree())
             {
-                spawnPoints.Add(spawn);
+                spawnZones.Add(spawn);
             }
         }
 
-        var index = Random.Range(0, spawnPoints.Count);
-        return spawnPoints[index].transform;
+        var index = Random.Range(0, spawnZones.Count);
+        return spawnZones[index];
     }
-    
+
+    public ExclusiveColliderZone GetDestination()
+    {
+        var destinationZones = new List<ExclusiveColliderZone>();
+        foreach (var destination in aiDestinations)
+        {
+            if (destination.IsFree())
+            {
+                destinationZones.Add(destination);
+            }
+        }
+
+        var index = Random.Range(0, destinationZones.Count);
+        return destinationZones[index];
+    }
+
+    private void SpawnEnemy(ExclusiveColliderZone spawnZone)
+    {
+        var enemy = Create(spawnZone.transform.position, spawnZone.transform.rotation);
+        _enemies.Add(enemy);
+
+        var ai = enemy.gameObject.GetComponent<AIBehavior>();
+        ai.system = this;
+
+        spawnZone.Allocate(ai.collider);
+    }
+
     private void OnSpawnCountdown()
     {
         // Debug.Log($"{GetType().Name}.OnSpawnCountdown: Countdown timeout.");
@@ -77,8 +95,7 @@ public class AISystem : PooledObject.ObjectPool
             return;
 
         // Debug.Log($"{GetType().Name}.OnSpawnCountdown: Spawning Enemy!");
-        var t = GetNextSpawn();
-        var enemy = Create(t.position, t.rotation);
-        _enemies.Add(enemy);
+        var spawnZone = GetNextSpawn();
+        SpawnEnemy(spawnZone);
     }
 }

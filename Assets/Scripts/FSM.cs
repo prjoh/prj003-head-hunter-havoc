@@ -42,4 +42,9 @@ public class FiniteStateMachine
     {
         _currentState?.Update();
     }
+
+    public string CurrentState()
+    {
+        return _currentState is null ? "null" : _currentState.name;
+    }
 }

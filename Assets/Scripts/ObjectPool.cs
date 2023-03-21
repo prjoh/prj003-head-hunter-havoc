@@ -66,6 +66,7 @@ public abstract partial class PooledObject
                 var next = _objectInstances[i+1].GetComponent<PooledObject>();
                 current.SetNextPooledObject(next);
 
+                current._pool = this;
                 current.OnConstruction();
             }
     

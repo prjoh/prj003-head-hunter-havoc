@@ -125,9 +125,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2155235934797811882}
-  - component: {fileID: 7887062468948480961}
   m_Layer: 0
-  m_Name: ProjectileLauncher
+  m_Name: ProjectileSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -148,20 +147,6 @@ Transform:
   m_Father: {fileID: 2155235934748931861}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7887062468948480961
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2155235934797811883}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d5cf12fbcdd94ceda5f0e7568671398, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pooledObjectPrefab: {fileID: 4279918362146745528, guid: ba4d850f38553442f9a3f231af475f73, type: 3}
-  poolSize: 100
 --- !u!1 &2155235935040831841
 GameObject:
   m_ObjectHideFlags: 0
@@ -178,7 +163,7 @@ GameObject:
   - component: {fileID: 2155235935040831847}
   m_Layer: 6
   m_Name: Enemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -299,5 +284,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agent: {fileID: 2155235935040831844}
   collider: {fileID: 2155235935040831840}
+  projectileSpawn: {fileID: 2155235934797811882}
+  currentState: 
   system: {fileID: 0}
   player: {fileID: 0}
+  projectilePool: {fileID: 0}

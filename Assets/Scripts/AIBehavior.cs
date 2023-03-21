@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -59,31 +58,45 @@ public class RunningState : State
 public class FightingState : State
 {
     private AIBehavior _ai;
+    private Vector3 _targetDirection;
+    private CountdownTimer _shootTimer;
 
     public FightingState(string name, AIBehavior ai) : base(name)
     {
         _ai = ai;
+        _shootTimer = new CountdownTimer(2.5f);
+        _shootTimer.Stop();
     }
 
     public override void Enter()
     {
+        _shootTimer.Timeout += OnShootTimeout;
+        _shootTimer.Start();
     }
 
     public override void Update()
     {
         var targetDelta = _ai.player.transform.position - _ai.gameObject.transform.position;
         // var targetDistance = targetDelta.magnitude;
-        var targetDirection = targetDelta.normalized;
+        _targetDirection = targetDelta.normalized;
 
-        var yaw = -90.0f + Mathf.Rad2Deg * Mathf.Atan2(-targetDirection.z, targetDirection.x);
-        var pitch = 180.0f + Mathf.Rad2Deg * Mathf.Asin(targetDirection.y);
+        var yaw = -90.0f + Mathf.Rad2Deg * Mathf.Atan2(-_targetDirection.z, _targetDirection.x);
+        var pitch = 180.0f + Mathf.Rad2Deg * Mathf.Asin(_targetDirection.y);
 
         var gun = _ai.gameObject.transform.GetChild(0).transform;
         gun.rotation = Quaternion.Euler(pitch, yaw, 0.0f);
+
+        _shootTimer.Update(Time.deltaTime);
     }
 
     public override void Exit()
     {
+        _shootTimer.Timeout -= OnShootTimeout;
+    }
+
+    private void OnShootTimeout()
+    {
+        _ai.projectilePool.Shoot(_ai.projectileSpawn.position, _targetDirection, 1600.0f);
     }
 }
 
@@ -111,10 +124,14 @@ public class AIBehavior : PooledObject
 {
     public NavMeshAgent agent;
     public Collider collider;
+    public Transform projectileSpawn;
+
+    public string currentState = "";
 
     [HideInInspector] public AISystem system;
     public readonly FiniteStateMachine fsm = new ();
     [HideInInspector] public GameObject player = null;
+    [HideInInspector] public ProjectilePool projectilePool;
 
     private Transform _destination = null;
     
@@ -126,6 +143,10 @@ public class AIBehavior : PooledObject
         fsm.AddState(new RunningState("Running", this));
         fsm.AddState(new FightingState("Fighting", this));
         fsm.AddState(new DeathState("Death"));
+
+        projectilePool = FindObjectOfType<ProjectilePool>();
+        if (projectilePool == null)
+            Debug.LogError($"{GetType().Name}.OnConstruction: No ProjectilePool found! Please make sure a ProjectilePool is in your Scene.");
     }
 
     protected override void Init()
@@ -146,6 +167,7 @@ public class AIBehavior : PooledObject
     public void Update()
     {
         fsm.Update();
+        currentState = fsm.CurrentState();
 
         if (_destination)
             agent.destination = _destination.position;

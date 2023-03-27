@@ -12,6 +12,9 @@ public class Player : MonoBehaviour
     private Color _projectileColor;
     private ProjectilePool _projectilePool;
 
+    public ProjectileLauncher projectileLauncher; 
+    public ProjectileLauncher projectileLauncher2; 
+
     private void Awake()
     {
         _health = new HealthComponent();
@@ -32,8 +35,21 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        var target = crosshair.GetTargetPosition();
+        
+        var leftFrom = projectileLauncher.transform.parent;
+        var leftDirection = (target - leftFrom.position).normalized;
+        var rightFrom = projectileLauncher2.transform.parent;
+        var rightDirection = (target - rightFrom.position).normalized;
+
+        leftFrom.rotation = Quaternion.LookRotation(leftDirection);
+        rightFrom.rotation = Quaternion.LookRotation(rightDirection);
+
         if (Input.GetMouseButtonDown(0))
-            Shoot();
+        {
+            projectileLauncher.Shoot();
+            projectileLauncher2.Shoot();
+        }
     } 
 
     public void Shoot()
@@ -50,9 +66,13 @@ public class Player : MonoBehaviour
         _projectilePool.Shoot(leftFrom, leftDirection, 2000.0f, 0.25f, _projectileColor, targets);
         _projectilePool.Shoot(rightFrom, rightDirection, 2000.0f, 0.25f, _projectileColor, targets);
     }
-    //
-    // private void OnDrawGizmos()
-    // {
-    //     throw new NotImplementedException();
-    // }
+    
+    private void OnDrawGizmos()
+    {
+        var from = projectileLauncher.transform.parent;
+        var target = crosshair.GetTargetPosition();
+        
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawLine(from.position, target);
+    }
 }

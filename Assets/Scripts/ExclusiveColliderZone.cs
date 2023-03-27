@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 
@@ -20,6 +21,12 @@ public class ExclusiveColliderZone : MonoBehaviour
 
         var rb = gameObject.AddComponent<Rigidbody>();
         rb.isKinematic = true;
+    }
+
+    private void Update()
+    {
+        if (_blockingCollider is not null && !_blockingCollider.gameObject.activeSelf)
+            _blockingCollider = null;
     }
 
     public void Allocate(Collider blockingCollider)

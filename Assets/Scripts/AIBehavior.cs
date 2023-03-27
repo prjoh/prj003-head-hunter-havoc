@@ -47,8 +47,8 @@ public class RunningState : State
     public override void Update()
     {
         // TODO: Currently disabled for debugging purposes
-        // if (Mathf.Approximately(Vector3.Distance(_ai.agent.pathEndPosition, _ai.transform.position) - 1.0f, 0.0f))
-            // _ai.fsm.SwitchState("Fighting");
+        if (Mathf.Approximately(Vector3.Distance(_ai.agent.pathEndPosition, _ai.transform.position) - 1.0f, 0.0f))
+            _ai.fsm.SwitchState("Fighting");
     }
 
     public override void Exit()
@@ -99,7 +99,8 @@ public class FightingState : State
 
     private void OnShootTimeout()
     {
-        _ai.projectilePool.Shoot(_ai.projectileSpawn.position, _targetDirection, 1600.0f, 0.5f, _projectileColor, "Player");
+        // _ai.projectilePool.Shoot(_ai.projectileSpawn.position, _targetDirection, 1600.0f, 0.5f, _projectileColor, "Player");
+        _ai.projectileLauncher.Shoot();
     }
 }
 
@@ -135,7 +136,8 @@ public class AIBehavior : PooledObject
     public readonly FiniteStateMachine fsm = new ();
     [HideInInspector] public GameObject player = null;
     [HideInInspector] public ProjectilePool projectilePool;
-    private HealthComponent _health;
+    [HideInInspector] public HealthComponent health;
+    public ProjectileLauncher projectileLauncher; 
 
     private Transform _destination = null;
     
@@ -152,8 +154,7 @@ public class AIBehavior : PooledObject
         if (projectilePool == null)
             Debug.LogError($"{GetType().Name}.OnConstruction: No ProjectilePool found! Please make sure a ProjectilePool is in your Scene.");
         
-        _health = new HealthComponent();
-        _health.Init();
+        health = new HealthComponent();
     }
 
     protected override void Init()
@@ -163,20 +164,14 @@ public class AIBehavior : PooledObject
         _destination = null;
         player = GameObject.FindWithTag("Player");
 
+        health.Init();
+
         fsm.SwitchState("Idle");
     }
 
     public void SetDestination(Transform destination)
     {
         _destination = destination;
-    }
-
-    public void TakeDamage(float percentage)
-    {
-        _health.TakeDamage(percentage);
-
-        if (!_health.IsAlive())
-            Destroy();
     }
 
     public void Update()
@@ -186,6 +181,9 @@ public class AIBehavior : PooledObject
 
         if (_destination)
             agent.destination = _destination.position;
+
+        if (!health.IsAlive())
+            Destroy();
     }
 
     private void OnDrawGizmos()

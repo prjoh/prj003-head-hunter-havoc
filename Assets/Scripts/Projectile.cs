@@ -83,7 +83,7 @@ public class Projectile : PooledObject
                 else if (targetTag == "Enemy")
                 {
                     var ai = other.gameObject.GetComponent<AIBehavior>();
-                    ai.TakeDamage(0.5f);
+                    ai.health.TakeDamage(0.5f);
                 }
 
                 else

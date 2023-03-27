@@ -18,6 +18,9 @@ public class EyeDetector : MonoBehaviour
     [SerializeField, TooltipAttribute("Set FPS of WebCamTexture.")]
     public int requestedFPS = 30;
 
+    [Range(0, 63)]
+    public int index = 0;
+
     public float ipdCM = 6.4f;
     public int focalDistancePx = 711;
 
@@ -176,7 +179,18 @@ public class EyeDetector : MonoBehaviour
 
     private void UpdateEyePositions(List<Vector2> result)
     {
-        if (dlibShapePredictorName == PredictorNamePreset.sp_human_face_6)
+        if (dlibShapePredictorName is PredictorNamePreset.sp_human_face_68 or PredictorNamePreset.sp_human_face_68_for_mobile)
+        {
+            var rightEye0 = result[36];
+            var rightEye1 = result[39];
+            var leftEye0 = result[42];
+            var leftEye1 = result[45];
+
+            _rightEyePx = (rightEye0 + rightEye1) * 0.5f;
+            _leftEyePx = (leftEye0 + leftEye1) * 0.5f;
+        }
+
+        else
         {
             var rightEye0 = result[2];
             var rightEye1 = result[3];

@@ -97,7 +97,7 @@ public class AISystem : PooledObject.ObjectPool
         // Debug.Log($"{GetType().Name}.OnSpawnCountdown: Countdown timeout.");
         if (LiveSize() >= maxEnemies)
         {
-            _spawnCountdown.Stop(); // TODO: This is only temporary
+            // _spawnCountdown.Stop(); // TODO: This is only temporary
             return;
         }
 
@@ -122,7 +122,7 @@ public class AISystem : PooledObject.ObjectPool
             var dmgPercentage = 0.5f * dmgFactor;
 
             var ai = enemy.GetComponent<AIBehavior>();
-            ai.TakeDamage(dmgPercentage);
+            ai.health.TakeDamage(dmgPercentage);
 
             Debug.Log($"-------- Enemy-{enemy.gameObject.name} --------");
             Debug.Log($"aiHitDelta: {aiHitDelta}");
@@ -131,11 +131,11 @@ public class AISystem : PooledObject.ObjectPool
         }
     }
 
-    // private void OnDrawGizmos()
-    // {
-    //     for (var i = debugDraw.Count - 1; i >= 0; --i)
-    //     {
-    //         Gizmos.DrawSphere(debugDraw[i], 3.0f);
-    //     }
-    // }
+    private void OnDrawGizmos()
+    {
+        for (var i = debugDraw.Count - 1; i >= 0; --i)
+        {
+            Gizmos.DrawSphere(debugDraw[i], 3.0f);
+        }
+    }
 }

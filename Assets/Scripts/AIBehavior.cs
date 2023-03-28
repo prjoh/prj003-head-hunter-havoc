@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,6 +14,7 @@ public class IdleState : State
 
     public override void Enter()
     {
+        _ai.animator.Play("Idle");
     }
 
     public override void Update()
@@ -42,12 +44,12 @@ public class RunningState : State
 
     public override void Enter()
     {
+        _ai.animator.Play("Running");
     }
 
     public override void Update()
     {
-        // TODO: Currently disabled for debugging purposes
-        if (Mathf.Approximately(Vector3.Distance(_ai.agent.pathEndPosition, _ai.transform.position) - 1.0f, 0.0f))
+        if (Mathf.Approximately(Vector3.Distance(_ai.agent.pathEndPosition, _ai.transform.position), 0.0f))
             _ai.fsm.SwitchState("Fighting");
     }
 
@@ -66,13 +68,15 @@ public class FightingState : State
     public FightingState(string name, AIBehavior ai) : base(name)
     {
         _ai = ai;
-        _shootTimer = new CountdownTimer(2.5f);
+        _shootTimer = new CountdownTimer(3.0f);
         _shootTimer.Stop();
         _projectileColor = new Color(191, 46, 0) * 0.0115f;
     }
 
     public override void Enter()
     {
+        _ai.animator.Play("Idle");
+
         _shootTimer.Timeout += OnShootTimeout;
         _shootTimer.Start();
     }
@@ -80,14 +84,15 @@ public class FightingState : State
     public override void Update()
     {
         var targetDelta = _ai.player.transform.position - _ai.gameObject.transform.position;
-        // var targetDistance = targetDelta.magnitude;
+        // // var targetDistance = targetDelta.magnitude;
         _targetDirection = targetDelta.normalized;
-
-        var yaw = -90.0f + Mathf.Rad2Deg * Mathf.Atan2(-_targetDirection.z, _targetDirection.x);
-        var pitch = 180.0f + Mathf.Rad2Deg * Mathf.Asin(_targetDirection.y);
-
-        var gun = _ai.gameObject.transform.GetChild(0).transform;
-        gun.rotation = Quaternion.Euler(pitch, yaw, 0.0f);
+        //
+        var yaw = 90.0f + Mathf.Rad2Deg * Mathf.Atan2(-_targetDirection.z, _targetDirection.x);
+        // var pitch = 180.0f + Mathf.Rad2Deg * Mathf.Asin(_targetDirection.y);
+        //
+        // var gun = _ai.gameObject.transform.GetChild(0).transform;
+        // gun.rotation = Quaternion.Euler(pitch, yaw, 0.0f);
+        _ai.gameObject.transform.rotation = Quaternion.Euler(0.0f, yaw, 0.0f);
 
         _shootTimer.Update(Time.deltaTime);
     }
@@ -100,7 +105,47 @@ public class FightingState : State
     private void OnShootTimeout()
     {
         // _ai.projectilePool.Shoot(_ai.projectileSpawn.position, _targetDirection, 1600.0f, 0.5f, _projectileColor, "Player");
-        _ai.projectileLauncher.Shoot();
+        // _ai.projectileLauncher.Shoot();
+        _shootTimer.Stop();
+        _ai.StartCoroutine(ShootCoroutine());
+    }
+
+    private IEnumerator ShootCoroutine()
+    {
+        var projectileLauncherTransform = _ai.projectileLauncher.gameObject.transform;
+        projectileLauncherTransform.SetParent(_ai.enemyWeaponSkin.GetCurrentWeapon().transform.GetChild(0), true);
+        projectileLauncherTransform.localScale = Vector3.one;
+        projectileLauncherTransform.localPosition = Vector3.zero;
+        projectileLauncherTransform.localRotation = Quaternion.identity;
+
+        _ai.animator.Play("Shoot");
+
+        while (!_ai.animator.GetCurrentAnimatorStateInfo(0).IsName("Shoot"))
+            yield return null;
+
+        while (_ai.animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.35f)
+            yield return null;
+        
+        projectileLauncherTransform.SetParent(_ai.gameObject.transform, true);
+        projectileLauncherTransform.localScale = Vector3.one;
+        
+        for (var i = 0; i < 3; i++)
+        {
+            var direction = (_ai.player.transform.position - projectileLauncherTransform.transform.position).normalized;
+            projectileLauncherTransform.rotation = Quaternion.LookRotation(direction);
+
+            _ai.animator.Play("Shoot", -1, 0.35f);
+            _ai.projectileLauncher.Shoot();
+
+            yield return new WaitForSeconds(1.3f);
+        }
+
+        while (_ai.animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.9f)
+            yield return null;
+
+        _ai.animator.CrossFade("Idle", 0.1f);
+
+        _shootTimer.Start();
     }
 }
 
@@ -128,7 +173,8 @@ public class AIBehavior : PooledObject
 {
     public NavMeshAgent agent;
     public Collider collider;
-    public Transform projectileSpawn;
+    public EnemyWeaponSkin enemyWeaponSkin;
+    public Animator animator;
 
     public string currentState = "";
 
@@ -155,6 +201,12 @@ public class AIBehavior : PooledObject
             Debug.LogError($"{GetType().Name}.OnConstruction: No ProjectilePool found! Please make sure a ProjectilePool is in your Scene.");
         
         health = new HealthComponent();
+            
+        var projectileLauncherTransform = projectileLauncher.gameObject.transform;
+        projectileLauncherTransform.SetParent(enemyWeaponSkin.GetCurrentWeapon().transform.GetChild(0));
+        projectileLauncherTransform.localScale = Vector3.one;
+        projectileLauncherTransform.localPosition = Vector3.zero;
+        projectileLauncherTransform.localRotation = Quaternion.identity;
     }
 
     protected override void Init()

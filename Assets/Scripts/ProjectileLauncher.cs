@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class ProjectileLauncher : MonoBehaviour
 {
+    public string targetTag;
+
     [Header("Projectile")]
     public ParticleSystem projectileVFX;
     public ParticleSystem projectileBeamVFX;
@@ -20,6 +22,9 @@ public class ProjectileLauncher : MonoBehaviour
     private ProjectileHit _projectileHitVFX;
 
     private List<ParticleCollisionEvent> _collisionEvents;
+
+    public delegate void OnExplosion(Vector3 position, string targetTag);
+    public static event OnExplosion Explosion;
 
     private void Awake()
     {
@@ -65,6 +70,16 @@ public class ProjectileLauncher : MonoBehaviour
             {
                 _projectileHitVFX.EmitAtLocation(_collisionEvents[i].intersection);
             }
+
+            Explosion?.Invoke(_collisionEvents[i].intersection, targetTag);
+            // if (other.CompareTag(targetTag))
+            // {
+            //     if (targetTag == "Enemy")
+            //     {
+            //         var ai = other.gameObject.GetComponent<AIBehavior>();
+            //         ai.health.TakeDamage(0.5f);
+            //     }
+            // }
         }
     }
 }

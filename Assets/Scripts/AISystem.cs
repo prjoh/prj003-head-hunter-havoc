@@ -33,13 +33,13 @@ public class AISystem : PooledObject.ObjectPool
     private void OnEnable()
     {
         _spawnCountdown.Timeout += OnSpawnCountdown;
-        Projectile.EnvironmentHit += OnEnvironmentHit;
+        // Projectile.EnvironmentHit += OnEnvironmentHit;
     }
 
     private void OnDisable()
     {
         _spawnCountdown.Timeout -= OnSpawnCountdown;
-        Projectile.EnvironmentHit -= OnEnvironmentHit;
+        // Projectile.EnvironmentHit -= OnEnvironmentHit;
     }
 
     private void Update()

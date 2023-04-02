@@ -92,12 +92,13 @@ public abstract partial class PooledObject
             var available = _firstAvailable;
             _firstAvailable = available.GetNextPooledObject().GetComponent<PooledObject>();
 
-            available.Init();
-
             var obj = available.gameObject;
             obj.transform.position = position;
             obj.transform.rotation = orientation;
             obj.SetActive(true);
+
+            available.Init();
+
             return available;
         }
     

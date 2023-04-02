@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -19,6 +20,9 @@ public class IdleState : State
 
     public override void Update()
     {
+        if (!_ai.health.IsAlive()) 
+            _ai.fsm.SwitchState("Death");
+
         var destination = _ai.system.GetDestination();
         if (!destination)
             return;
@@ -49,6 +53,9 @@ public class RunningState : State
 
     public override void Update()
     {
+        if (!_ai.health.IsAlive()) 
+            _ai.fsm.SwitchState("Death");
+
         if (Mathf.Approximately(Vector3.Distance(_ai.agent.pathEndPosition, _ai.transform.position), 0.0f))
             _ai.fsm.SwitchState("Fighting");
     }
@@ -83,6 +90,9 @@ public class FightingState : State
 
     public override void Update()
     {
+        if (!_ai.health.IsAlive()) 
+            _ai.fsm.SwitchState("Death");
+
         var targetDelta = _ai.player.transform.position - _ai.gameObject.transform.position;
         // // var targetDistance = targetDelta.magnitude;
         _targetDirection = targetDelta.normalized;
@@ -151,20 +161,31 @@ public class FightingState : State
 
 public class DeathState : State
 {
-    public DeathState(string name) : base(name)
+    private AIBehavior _ai;
+    private CountdownTimer _deathTimer;
+
+    public DeathState(string name, AIBehavior ai) : base(name)
     {
+        _ai = ai;
+        _deathTimer = new CountdownTimer(10.0f);
     }
 
     public override void Enter()
     {
+        _deathTimer.Timeout += Exit;
+        _deathTimer.Start();
     }
 
     public override void Update()
     {
+        _deathTimer.Update(Time.deltaTime);
     }
 
     public override void Exit()
     {
+        _deathTimer.Timeout -= Exit;
+
+        _ai.Destroy();
     }
 }
 
@@ -183,7 +204,8 @@ public class AIBehavior : PooledObject
     [HideInInspector] public GameObject player = null;
     [HideInInspector] public ProjectilePool projectilePool;
     [HideInInspector] public HealthComponent health;
-    public ProjectileLauncher projectileLauncher; 
+    public ProjectileLauncher projectileLauncher;
+    public RagdollController ragdollController;
 
     private Transform _destination = null;
     
@@ -194,7 +216,7 @@ public class AIBehavior : PooledObject
         fsm.AddState(new IdleState("Idle", this));
         fsm.AddState(new RunningState("Running", this));
         fsm.AddState(new FightingState("Fighting", this));
-        fsm.AddState(new DeathState("Death"));
+        fsm.AddState(new DeathState("Death", this));
 
         projectilePool = FindObjectOfType<ProjectilePool>();
         if (projectilePool == null)
@@ -217,6 +239,7 @@ public class AIBehavior : PooledObject
         player = GameObject.FindWithTag("Player");
 
         health.Init();
+        ragdollController.EnableAnimator();
 
         fsm.SwitchState("Idle");
     }
@@ -226,6 +249,16 @@ public class AIBehavior : PooledObject
         _destination = destination;
     }
 
+    private void OnEnable()
+    {
+        ProjectileLauncher.Explosion += OnExplosion;
+    }
+
+    private void OnDisable()
+    {
+        ProjectileLauncher.Explosion -= OnExplosion;
+    }
+
     public void Update()
     {
         fsm.Update();
@@ -233,9 +266,32 @@ public class AIBehavior : PooledObject
 
         if (_destination)
             agent.destination = _destination.position;
+    }
+
+    private void OnExplosion(Vector3 position, string targetTag)
+    {
+        if (!gameObject.CompareTag(targetTag)) 
+            return;
 
         if (!health.IsAlive())
-            Destroy();
+            return;
+
+        const float hitRadius = 4.0f;  // TODO: Put this somewhere else?
+        var aiPos = transform.position;
+        var aiHitDelta = hitRadius - Vector3.Distance(position, aiPos);
+        if (aiHitDelta <= 0.0f) 
+            return;
+
+        var dmgFactor = Mathf.Max(0.0f, aiHitDelta) / hitRadius;
+        var dmgPercentage = 0.5f * dmgFactor;
+
+        health.TakeDamage(dmgPercentage);
+
+        if (!health.IsAlive())
+        {
+            ragdollController.EnableRagdoll();
+            ragdollController.AddExplosionForce(position, gameObject.tag);
+        }
     }
 
     private void OnDrawGizmos()
@@ -244,5 +300,10 @@ public class AIBehavior : PooledObject
         var targetDirection = targetDelta.normalized;
         Gizmos.color = Color.red;
         Gizmos.DrawRay(transform.position, targetDirection * 100.0f);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        print($"COLLISION {gameObject.name}<>{collision.gameObject.name}");
     }
 }

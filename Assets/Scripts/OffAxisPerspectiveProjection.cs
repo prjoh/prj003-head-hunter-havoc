@@ -1,7 +1,7 @@
 using UnityEngine;
 
 
-// [ExecuteInEditMode]
+[ExecuteInEditMode]
 public class OffAxisPerspectiveProjection : MonoBehaviour
 {
     private Camera _camera;

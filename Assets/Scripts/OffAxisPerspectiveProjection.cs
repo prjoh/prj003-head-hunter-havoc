@@ -12,6 +12,9 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
     public float bottom = -20.0f;
     public Vector3 eyePosition = new (0.0f, 0.0f, -30.0f);
 
+    public bool enableDebugMode = false;
+    public Vector3 debugPosition = new(0.0f, -3.0f, -40.0f);
+
     public EyeDetector eyeDetector;
     [Range(1.0f, 3.0f)]
     public float moveFactorX = 1.0f;
@@ -27,11 +30,18 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
 
     private void LateUpdate()
     {
-        var cameraPosition = _camera.transform.position;
-        cameraPosition.x = eyeDetector.rightEyeCM.x * moveFactorX;
-        cameraPosition.y = eyeDetector.rightEyeCM.y * moveFactorY;
-        cameraPosition.z = eyeDetector.rightEyeCM.z * moveFactorZ;
-        _camera.transform.position = cameraPosition;
+        if (enableDebugMode)
+        {
+            _camera.transform.position = debugPosition;
+        }
+        else
+        {
+            var cameraPosition = _camera.transform.position;
+            cameraPosition.x = eyeDetector.rightEyeCM.x * moveFactorX;
+            cameraPosition.y = eyeDetector.rightEyeCM.y * moveFactorY;
+            cameraPosition.z = eyeDetector.rightEyeCM.z * moveFactorZ;
+            _camera.transform.position = cameraPosition;
+        }
 
         eyePosition = _camera.transform.position;
         _camera.projectionMatrix = PerspectiveOffCenter(eyePosition, left, right, bottom, top, _camera.nearClipPlane, _camera.farClipPlane);

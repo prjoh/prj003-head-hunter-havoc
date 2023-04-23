@@ -1,7 +1,7 @@
-using System;
 using UnityEngine;
 
 
+// TODO: Is it really broken? Because the Update function looks like a fix??? TEST THIS!!!
 // TODO: THIS IS BROKEN!!
 //   This works only when leaving spawn points (although it also breaks if we manage to kill an enemy inside the spawn point!!!)
 public class ExclusiveColliderZone : MonoBehaviour
@@ -44,6 +44,7 @@ public class ExclusiveColliderZone : MonoBehaviour
         return _blockingCollider is null;
     }
     
+    // TODO: This should happen in AIBehavior! Right?
     private void OnTriggerExit(Collider other)
     {
         Debug.Log($"############# >>{GetType().Name}.OnTriggerExit {other.gameObject.name}");

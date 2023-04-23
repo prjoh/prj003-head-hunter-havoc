@@ -1,14 +1,80 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 
 public class AISystem : PooledObject.ObjectPool
 {
+    [Serializable]
+    public class SpawnZone
+    {
+        public string name;
+        public ExclusiveColliderZone[] spawns;
+        public ExclusiveColliderZone[] destinations;
+
+        public bool SpawnAvailable()
+        {
+            return spawns.All(spawn => spawn.IsFree());
+        }
+
+        public bool DestinationAvailable()
+        {
+            return destinations.All(dest => dest.IsFree());
+        }
+
+        public ExclusiveColliderZone GetAvailableSpawn()
+        {
+            if (!SpawnAvailable())
+                return null;
+
+            var colliderZone = new List<ExclusiveColliderZone>();
+            foreach (var spawn in spawns)
+            {
+                if (spawn.IsFree())
+                {
+                    colliderZone.Add(spawn);
+                }
+            }
+            
+            var index = Random.Range(0, colliderZone.Count);
+            return colliderZone[index];
+        }
+
+        public ExclusiveColliderZone GetClosestDestination(ExclusiveColliderZone spawn)
+        {
+            if (!DestinationAvailable())
+                return null;
+
+            var from = spawn.transform.position;
+            ExclusiveColliderZone result = null;
+            foreach (var dest in destinations)
+            {
+                if (!dest.IsFree())
+                    continue;
+
+                if (result is null)
+                {
+                    result = dest;
+                    continue;                    
+                }
+
+                if (Vector3.Distance(result.transform.position, from) > Vector3.Distance(dest.transform.position, from))
+                    result = dest;
+            }
+
+            return result;
+        }
+    }
+
+    [Header("Spawning")]
     public ExclusiveColliderZone[] spawns;
     public float spawnInterval = 5.0f;
     public int maxEnemies = 5;
     public ExclusiveColliderZone[] aiDestinations;
+
+    public SpawnZone[] spawnZones;
 
     private List<PooledObject> _enemies;
     private CountdownTimer _spawnCountdown;
@@ -25,7 +91,7 @@ public class AISystem : PooledObject.ObjectPool
 
     private void Start()
     {
-        SpawnEnemy(spawns[0]);
+        SpawnEnemy(spawnZones[0]);  // TODO: Fix this
 
         _spawnCountdown.Start();
     }
@@ -51,45 +117,59 @@ public class AISystem : PooledObject.ObjectPool
         // }
     }
 
-    private ExclusiveColliderZone GetNextSpawn()
+    private SpawnZone GetNextSpawn()
     {
-        var spawnZones = new List<ExclusiveColliderZone>();
-        foreach (var spawn in spawns)
+        var zones = new List<SpawnZone>();
+        foreach (var spawnZone in spawnZones)
         {
-            if (spawn.IsFree())
-            {
-                spawnZones.Add(spawn);
-            }
+            if (!spawnZone.SpawnAvailable() || !spawnZone.DestinationAvailable())
+                continue;
+
+            zones.Add(spawnZone);
         }
 
-        var index = Random.Range(0, spawnZones.Count);
-        return spawnZones[index];
+        if (zones.Count == 0)
+            return null;
+
+        var index = Random.Range(0, zones.Count);
+        return zones[index];
     }
 
-    public ExclusiveColliderZone GetDestination()
+    // public ExclusiveColliderZone GetDestination()
+    // {
+    //     var destinationZones = new List<ExclusiveColliderZone>();
+    //     foreach (var destination in aiDestinations)
+    //     {
+    //         if (destination.IsFree())
+    //         {
+    //             destinationZones.Add(destination);
+    //         }
+    //     }
+    //
+    //     var index = Random.Range(0, destinationZones.Count);
+    //     return destinationZones[index];
+    // }
+
+    private void SpawnEnemy(SpawnZone spawnZone)
     {
-        var destinationZones = new List<ExclusiveColliderZone>();
-        foreach (var destination in aiDestinations)
+        var spawn = spawnZone.GetAvailableSpawn();
+        if (spawn is null)
         {
-            if (destination.IsFree())
-            {
-                destinationZones.Add(destination);
-            }
+            Debug.LogError("Unable to get valid ExclusiveColliderZone spawn!");
+            return;
         }
 
-        var index = Random.Range(0, destinationZones.Count);
-        return destinationZones[index];
-    }
-
-    private void SpawnEnemy(ExclusiveColliderZone spawnZone)
-    {
-        var enemy = Create(spawnZone.transform.position, spawnZone.transform.rotation);
+        var enemy = Create(spawn.transform.position, spawn.transform.rotation);
         _enemies.Add(enemy);
 
         var ai = enemy.gameObject.GetComponent<AIBehavior>();
         ai.system = this;
 
-        spawnZone.Allocate(ai.collider);
+        // TODO: Instead, give reference of SpawnZone to AIBehavior
+        //   An AIBehavior allocates a spawn ExclusiveColliderZone, either it is freed when exiting or we call free on death
+        // spawn.Allocate(ai.collider);
+
+        ai.SetSpawn(spawnZone, spawn);
     }
 
     private void OnSpawnCountdown()
@@ -103,7 +183,13 @@ public class AISystem : PooledObject.ObjectPool
 
         // Debug.Log($"{GetType().Name}.OnSpawnCountdown: Spawning Enemy!");
         var spawnZone = GetNextSpawn();
-        SpawnEnemy(spawnZone);
+        if (spawnZone is null)
+        {
+            Debug.LogError("Unable to get valid SpawnZone!");
+            return;
+        }
+
+        SpawnEnemy(spawnZone);  // TODO: Fix this
     }
 
     private void OnEnvironmentHit(Vector3 position)

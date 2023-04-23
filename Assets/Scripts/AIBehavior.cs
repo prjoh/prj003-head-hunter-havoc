@@ -23,12 +23,15 @@ public class IdleState : State
         if (!_ai.health.IsAlive()) 
             _ai.fsm.SwitchState("Death");
 
-        var destination = _ai.system.GetDestination();
-        if (!destination)
+        // var destination = _ai.system.GetDestination();
+        // if (!destination)
+        if (_ai.zone is null || _ai.spawn is null)
             return;
 
-        destination.Allocate(_ai.collider);
-        _ai.SetDestination(destination.transform);
+        _ai.destination = _ai.zone.GetClosestDestination(_ai.spawn);
+        _ai.destination.Allocate(_ai.collider);
+
+        // _ai.SetDestination(destination.transform);
         _ai.fsm.SwitchState("Running");
     }
 
@@ -207,8 +210,10 @@ public class AIBehavior : PooledObject
     public ProjectileLauncher projectileLauncher;
     public RagdollController ragdollController;
 
-    private Transform _destination = null;
-    
+    [HideInInspector] public AISystem.SpawnZone zone = null;
+    [HideInInspector] public ExclusiveColliderZone spawn = null;
+    [HideInInspector] public ExclusiveColliderZone destination = null;
+
     protected override void OnConstruction()
     {
         base.OnConstruction();
@@ -235,7 +240,10 @@ public class AIBehavior : PooledObject
     {
         base.Init();
 
-        _destination = null;
+        zone = null;
+        spawn = null;
+        destination = null;
+
         player = GameObject.FindWithTag("Player");
 
         health.Init();
@@ -244,10 +252,18 @@ public class AIBehavior : PooledObject
         fsm.SwitchState("Idle");
     }
 
-    public void SetDestination(Transform destination)
+    public void SetSpawn(AISystem.SpawnZone _zone, ExclusiveColliderZone _spawn)
     {
-        _destination = destination;
+        zone = _zone;
+        spawn = _spawn;
+
+        spawn.Allocate(collider);
     }
+
+    // public void SetDestination(Transform destination)
+    // {
+    //     _destination = destination;
+    // }
 
     private void OnEnable()
     {
@@ -264,8 +280,8 @@ public class AIBehavior : PooledObject
         fsm.Update();
         currentState = fsm.CurrentState();  // TODO: This is only for debugging purposes
 
-        if (_destination)
-            agent.destination = _destination.position;
+        if (destination)
+            agent.destination = destination.transform.position;
     }
 
     private void OnExplosion(Vector3 position, string targetTag)

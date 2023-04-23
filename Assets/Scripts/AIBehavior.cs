@@ -28,7 +28,7 @@ public class IdleState : State
         if (_ai.zone is null || _ai.spawn is null)
             return;
 
-        _ai.destination = _ai.zone.GetClosestDestination(_ai.spawn);
+        _ai.destination = _ai.zone.GetAvailableDestination();
         _ai.destination.Allocate(_ai.collider);
 
         // _ai.SetDestination(destination.transform);
@@ -281,7 +281,15 @@ public class AIBehavior : PooledObject
         currentState = fsm.CurrentState();  // TODO: This is only for debugging purposes
 
         if (destination)
+        {
+            if (!agent.isOnNavMesh)
+            {
+                Debug.LogWarning("Tried setting NavMeshAgent destination, while not on NavMesh. Retry next frame!");
+                return;
+            }
+
             agent.destination = destination.transform.position;
+        }
     }
 
     private void OnExplosion(Vector3 position, string targetTag)

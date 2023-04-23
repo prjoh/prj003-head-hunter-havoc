@@ -42,6 +42,24 @@ public class AISystem : PooledObject.ObjectPool
             return colliderZone[index];
         }
 
+        public ExclusiveColliderZone GetAvailableDestination()
+        {
+            if (!DestinationAvailable())
+                return null;
+
+            var colliderZone = new List<ExclusiveColliderZone>();
+            foreach (var destination in destinations)
+            {
+                if (destination.IsFree())
+                {
+                    colliderZone.Add(destination);
+                }
+            }
+            
+            var index = Random.Range(0, colliderZone.Count);
+            return colliderZone[index];
+        }
+
         public ExclusiveColliderZone GetClosestDestination(ExclusiveColliderZone spawn)
         {
             if (!DestinationAvailable())
@@ -69,10 +87,10 @@ public class AISystem : PooledObject.ObjectPool
     }
 
     [Header("Spawning")]
-    public ExclusiveColliderZone[] spawns;
+    // public ExclusiveColliderZone[] spawns;
     public float spawnInterval = 5.0f;
     public int maxEnemies = 5;
-    public ExclusiveColliderZone[] aiDestinations;
+    // public ExclusiveColliderZone[] aiDestinations;
 
     public SpawnZone[] spawnZones;
 

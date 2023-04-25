@@ -59,6 +59,10 @@ public class RunningState : State
         if (!_ai.health.IsAlive()) 
             _ai.fsm.SwitchState("Death");
 
+        // var dist = _ai.agent.remainingDistance;
+        // if (!float.IsPositiveInfinity(dist) && _ai.agent.pathStatus==NavMeshPathStatus.PathComplete && dist == 0)
+            // _ai.fsm.SwitchState("Fighting");
+        
         if (Mathf.Approximately(Vector3.Distance(_ai.agent.pathEndPosition, _ai.transform.position), 0.0f))
             _ai.fsm.SwitchState("Fighting");
     }
@@ -243,6 +247,8 @@ public class AIBehavior : PooledObject
         zone = null;
         spawn = null;
         destination = null;
+
+        agent.ResetPath();
 
         player = GameObject.FindWithTag("Player");
 

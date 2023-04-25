@@ -9,7 +9,7 @@ public class ExclusiveColliderZone : MonoBehaviour
     private Collider _colliderZone;
     private Collider _blockingCollider;
 
-    // public bool available = true;
+    public bool available = true;
     
     private void Awake()
     {
@@ -34,11 +34,13 @@ public class ExclusiveColliderZone : MonoBehaviour
     public void Allocate(Collider blockingCollider)
     {
         _blockingCollider = blockingCollider;
+        available = false;
     }
 
     public void Free()
     {
         _blockingCollider = null;
+        available = true;
     }
 
     public bool IsFree()

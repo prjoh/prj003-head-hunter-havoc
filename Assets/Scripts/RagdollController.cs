@@ -36,7 +36,7 @@ public class RagdollController : MonoBehaviour
 
         foreach (var rb in _rigidbodies)
         {
-            rb.AddExplosionForce(500, position, 5.0f);
+            rb.AddExplosionForce(750, position, 5.0f);
         }
     }
 

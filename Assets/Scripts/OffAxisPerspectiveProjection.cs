@@ -15,7 +15,8 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
     public bool enableDebugMode = false;
     public Vector3 debugPosition = new(0.0f, -3.0f, -40.0f);
 
-    public EyeDetector eyeDetector;
+    // public EyeDetector eyeDetector;
+    public EyeDetectorThreaded eyeDetector;
     [Range(1.0f, 3.0f)]
     public float moveFactorX = 1.0f;
     [Range(1.0f, 3.0f)]

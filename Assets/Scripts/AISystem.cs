@@ -16,12 +16,12 @@ public class AISystem : PooledObject.ObjectPool
 
         public bool SpawnAvailable()
         {
-            return spawns.All(spawn => spawn.IsFree());
+            return spawns.Any(spawn => spawn.IsFree());
         }
 
         public bool DestinationAvailable()
         {
-            return destinations.All(dest => dest.IsFree());
+            return destinations.Any(dest => dest.IsFree());
         }
 
         public ExclusiveColliderZone GetAvailableSpawn()

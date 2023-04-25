@@ -9,6 +9,8 @@ public class ExclusiveColliderZone : MonoBehaviour
     private Collider _colliderZone;
     private Collider _blockingCollider;
 
+    // public bool available = true;
+    
     private void Awake()
     {
         _colliderZone = GetComponent<Collider>();

@@ -31,6 +31,8 @@ public class IdleState : State
         _ai.destination = _ai.zone.GetAvailableDestination();
         _ai.destination.Allocate(_ai.collider);
 
+        _ai.agent.SetDestination(_ai.destination.transform.position);
+
         // _ai.SetDestination(destination.transform);
         _ai.fsm.SwitchState("Running");
     }
@@ -58,6 +60,9 @@ public class RunningState : State
     {
         if (!_ai.health.IsAlive()) 
             _ai.fsm.SwitchState("Death");
+
+        if (_ai.agent.destination != _ai.agent.pathEndPosition)
+            return;
 
         // var dist = _ai.agent.remainingDistance;
         // if (!float.IsPositiveInfinity(dist) && _ai.agent.pathStatus==NavMeshPathStatus.PathComplete && dist == 0)
@@ -286,16 +291,16 @@ public class AIBehavior : PooledObject
         fsm.Update();
         currentState = fsm.CurrentState();  // TODO: This is only for debugging purposes
 
-        if (destination)
-        {
-            if (!agent.isOnNavMesh)
-            {
-                Debug.LogWarning("Tried setting NavMeshAgent destination, while not on NavMesh. Retry next frame!");
-                return;
-            }
-
-            agent.destination = destination.transform.position;
-        }
+        // if (destination)
+        // {
+        //     if (!agent.isOnNavMesh)
+        //     {
+        //         Debug.LogWarning("Tried setting NavMeshAgent destination, while not on NavMesh. Retry next frame!");
+        //         return;
+        //     }
+        //
+        //     agent.destination = destination.transform.position;
+        // }
     }
 
     private void OnExplosion(Vector3 position, string targetTag)

@@ -40,13 +40,8 @@ public class EyeDetectorThreaded : MonoBehaviour
     private Vector2 _leftEyePx;
     private Vector2 _rightEyePx;
 
-    public Vector3 leftEyeCM;
-    public Vector3 rightEyeCM;
-    private Vector3 _leftEyeCMUpdate;
-    private Vector3 _rightEyeCMUpdate;
-
-    [Range(0.01f, 1.0f)]
-    public float filterStrength = 0.5f;
+    [HideInInspector] public Vector3 leftEyeCMUpdate;
+    [HideInInspector] public Vector3 rightEyeCMUpdate;
 
     // [Range(0, 255)]
     // public int opacity = 255;
@@ -147,16 +142,13 @@ public class EyeDetectorThreaded : MonoBehaviour
             var leftToCenter = _leftEyePx - centerPx;
             var rightToCenter = _rightEyePx - centerPx;
 
-            _rightEyeCMUpdate.x = -_pixelToMeter(eyeDistanceCM, (int)rightToCenter.x);
-            _rightEyeCMUpdate.y = -_pixelToMeter(eyeDistanceCM, (int)rightToCenter.y);
-            _rightEyeCMUpdate.z = -eyeDistanceCM;
+            rightEyeCMUpdate.x = -_pixelToMeter(eyeDistanceCM, (int)rightToCenter.x);
+            rightEyeCMUpdate.y = -_pixelToMeter(eyeDistanceCM, (int)rightToCenter.y);
+            rightEyeCMUpdate.z = -eyeDistanceCM;
 
-            _leftEyeCMUpdate.x = -_pixelToMeter(eyeDistanceCM, (int)leftToCenter.x);
-            _leftEyeCMUpdate.y = -_pixelToMeter(eyeDistanceCM, (int)leftToCenter.y);
-            _leftEyeCMUpdate.z = -eyeDistanceCM;
-
-            rightEyeCM = Vector3.Lerp(rightEyeCM, _rightEyeCMUpdate, filterStrength);
-            leftEyeCM = Vector3.Lerp(leftEyeCM, _leftEyeCMUpdate, filterStrength);
+            leftEyeCMUpdate.x = -_pixelToMeter(eyeDistanceCM, (int)leftToCenter.x);
+            leftEyeCMUpdate.y = -_pixelToMeter(eyeDistanceCM, (int)leftToCenter.y);
+            leftEyeCMUpdate.z = -eyeDistanceCM;
         }
         // DrawEyePositions(colors, new Color32(0, 255, 0, 255), 3);
 

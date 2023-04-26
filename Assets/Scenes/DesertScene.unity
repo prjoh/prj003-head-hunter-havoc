@@ -3338,9 +3338,8 @@ MonoBehaviour:
   requestedFPS: 30
   ipdCM: 5.8
   focalDistancePx: 570
-  leftEyeCM: {x: 0, y: 0, z: 0}
-  rightEyeCM: {x: 0, y: 0, z: 0}
-  filterStrength: 0.1
+  leftEyeCMUpdate: {x: 0, y: 0, z: 0}
+  rightEyeCMUpdate: {x: 0, y: 0, z: 0}
 --- !u!43 &127784614
 Mesh:
   m_ObjectHideFlags: 0
@@ -4701,8 +4700,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pooledObjectPrefab: {fileID: 2155235935040831841, guid: 97920cb5f6b4c4809952195a9d40c0a9, type: 3}
   poolSize: 50
-  spawnInterval: 1
-  maxEnemies: 24
+  spawnInterval: 3
+  maxEnemies: 5
   spawnZones:
   - name: TowerLeft
     spawns:
@@ -26783,9 +26782,12 @@ MonoBehaviour:
   enableDebugMode: 1
   debugPosition: {x: 0, y: -3, z: -40}
   eyeDetector: {fileID: 125765320}
+  filterStrength: 0.85
   moveFactorX: 1.5
   moveFactorY: 1.5
   moveFactorZ: 1
+  leftEyeCM: {x: 0, y: 0, z: 0}
+  rightEyeCM: {x: 0, y: 0, z: 0}
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0

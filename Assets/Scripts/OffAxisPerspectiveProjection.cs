@@ -17,12 +17,37 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
 
     // public EyeDetector eyeDetector;
     public EyeDetectorThreaded eyeDetector;
+    [Range(0.0f, 0.99f)]
+    public float filterStrength = 0.5f;
     [Range(1.0f, 3.0f)]
     public float moveFactorX = 1.0f;
     [Range(1.0f, 3.0f)]
     public float moveFactorY = 1.0f;
     [Range(1.0f, 3.0f)]
     public float moveFactorZ = 1.0f;
+
+    public Vector3 leftEyeCM;
+    public Vector3 rightEyeCM;
+
+    // public float filterStrengthFactor = 0.95f;
+    // public float maxFilter = 0.95f;
+    // public float minFilter = 0.6f;
+    // public float threshold = 0.8f;
+    // public float increaseFactor = 0.01f;
+    // public float decreaseFactor = 0.025f;
+    //
+    // public bool enableStats = false;
+    // private MovingAverage rightEyeDiff;
+    // public float rightEyeDiffAvg;
+    // public float rightEyeDiffMin;
+    // public float rightEyeDiffMax;
+
+    // private void Awake()
+    // {
+    //     rightEyeDiff = new MovingAverage(100);
+    //     rightEyeDiffMin = float.MaxValue;
+    //     rightEyeDiffMax = float.MinValue;
+    // }
 
     private void Start()
     {
@@ -37,10 +62,41 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
         }
         else
         {
+            // var newValue = Vector3.Distance(rightEyeCM, eyeDetector.rightEyeCMUpdate);
+            // rightEyeDiff.Add(newValue);
+            // if (enableStats)
+            // {
+            //     //Moving, Filter 0.6
+            //     // [0.09924269, 1.804512], [0.09924269, 2.461033]
+            //     //Still, Filter 0.95
+            //     // [0.1828557, 0.5087405]
+            //     rightEyeDiffAvg = rightEyeDiff.GetAverage;
+            //     if (rightEyeDiffAvg < rightEyeDiffMin)  // 0.09924269
+            //         rightEyeDiffMin = rightEyeDiffAvg;
+            //     if (rightEyeDiffAvg > rightEyeDiffMax)  // 1.604512; 2.461033
+            //         rightEyeDiffMax = rightEyeDiffAvg;
+            //
+            //     float difference = Mathf.Abs(newValue - rightEyeDiffAvg);
+            //     if (difference <= threshold)
+            //     {
+            //         filterStrengthFactor = ExtensionMethods.Lerp(filterStrengthFactor, maxFilter, increaseFactor);
+            //         // filterStrengthFactor = Mathf.Min(maxFilter, filterStrengthFactor + increaseFactor);
+            //     }
+            //     else if (difference > threshold)
+            //     {
+            //         filterStrengthFactor = Mathf.Max(minFilter, filterStrengthFactor - decreaseFactor);
+            //     }
+            //
+            //     filterStrength = filterStrengthFactor;
+            // }
+
+            rightEyeCM = Vector3.Lerp(rightEyeCM, eyeDetector.rightEyeCMUpdate, 1.0f - filterStrength);
+            leftEyeCM = Vector3.Lerp(leftEyeCM, eyeDetector.leftEyeCMUpdate, 1.0f - filterStrength);
+
             var cameraPosition = _camera.transform.position;
-            cameraPosition.x = eyeDetector.rightEyeCM.x * moveFactorX;
-            cameraPosition.y = eyeDetector.rightEyeCM.y * moveFactorY;
-            cameraPosition.z = eyeDetector.rightEyeCM.z * moveFactorZ;
+            cameraPosition.x = rightEyeCM.x * moveFactorX;
+            cameraPosition.y = rightEyeCM.y * moveFactorY;
+            cameraPosition.z = -40.0f;//rightEyeCM.z * moveFactorZ;
             _camera.transform.position = cameraPosition;
         }
 

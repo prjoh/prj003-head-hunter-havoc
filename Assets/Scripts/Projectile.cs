@@ -65,35 +65,35 @@ public class Projectile : PooledObject
         alive = lifeTimeS > 0.0f;
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        foreach (var targetTag in _targetTags)
-        {
-            if (other.CompareTag(targetTag))
-            {
-                Debug.Log($"PROJECTILE COLLIDED WITH: {other.gameObject.name}");
-                Destroy();
-
-                if (targetTag == "Player")
-                {
-                    var player = other.gameObject.GetComponent<Player>();
-                    player.TakeDamage(0.05f);
-                }
-
-                else if (targetTag == "Enemy")
-                {
-                    var ai = other.gameObject.GetComponent<AIBehavior>();
-                    ai.health.TakeDamage(0.5f);
-                }
-
-                else
-                {
-                    // TODO: What is the performance implication of ClosestPoint???
-                    EnvironmentHit?.Invoke(other.ClosestPoint(transform.position));
-                }
-
-                return;
-            }
-        }
-    }
+    // private void OnTriggerEnter(Collider other)
+    // {
+    //     foreach (var targetTag in _targetTags)
+    //     {
+    //         if (other.CompareTag(targetTag))
+    //         {
+    //             Debug.Log($"PROJECTILE COLLIDED WITH: {other.gameObject.name}");
+    //             Destroy();
+    //
+    //             if (targetTag == "Player")
+    //             {
+    //                 var player = other.gameObject.GetComponent<Player>();
+    //                 player.TakeDamage(0.05f);
+    //             }
+    //
+    //             else if (targetTag == "Enemy")
+    //             {
+    //                 var ai = other.gameObject.GetComponent<AIBehavior>();
+    //                 ai.health.TakeDamage(0.5f);
+    //             }
+    //
+    //             else
+    //             {
+    //                 // TODO: What is the performance implication of ClosestPoint???
+    //                 EnvironmentHit?.Invoke(other.ClosestPoint(transform.position));
+    //             }
+    //
+    //             return;
+    //         }
+    //     }
+    // }
 }

@@ -186,6 +186,8 @@ public class DeathState : State
     {
         _deathTimer.Timeout += Exit;
         _deathTimer.Start();
+
+        _ai.system.EmitEnemyDied();
     }
 
     public override void Update()
@@ -214,7 +216,7 @@ public class AIBehavior : PooledObject
     [HideInInspector] public AISystem system;
     public readonly FiniteStateMachine fsm = new ();
     [HideInInspector] public GameObject player = null;
-    [HideInInspector] public ProjectilePool projectilePool;
+    // [HideInInspector] public ProjectilePool projectilePool;
     [HideInInspector] public HealthComponent health;
     public ProjectileLauncher projectileLauncher;
     public RagdollController ragdollController;
@@ -232,9 +234,9 @@ public class AIBehavior : PooledObject
         fsm.AddState(new FightingState("Fighting", this));
         fsm.AddState(new DeathState("Death", this));
 
-        projectilePool = FindObjectOfType<ProjectilePool>();
-        if (projectilePool == null)
-            Debug.LogError($"{GetType().Name}.OnConstruction: No ProjectilePool found! Please make sure a ProjectilePool is in your Scene.");
+        // projectilePool = FindObjectOfType<ProjectilePool>();
+        // if (projectilePool == null)
+            // Debug.LogError($"{GetType().Name}.OnConstruction: No ProjectilePool found! Please make sure a ProjectilePool is in your Scene.");
         
         health = new HealthComponent();
             

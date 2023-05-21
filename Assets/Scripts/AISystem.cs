@@ -88,47 +88,87 @@ public class AISystem : PooledObject.ObjectPool
 
     [Header("Spawning")]
     // public ExclusiveColliderZone[] spawns;
-    public float spawnInterval = 5.0f;
+    public float spawnIntervalS = 5.0f;
+    public float difficultyIntervalS = 10.0f;
     public int maxEnemies = 5;
+
     // public ExclusiveColliderZone[] aiDestinations;
 
     public SpawnZone[] spawnZones;
 
-    private List<PooledObject> _enemies;
+    // private List<PooledObject> _enemies;
     private CountdownTimer _spawnCountdown;
+    private CountdownTimer _difficultyCountdown;
 
     private List<Vector3> debugDraw = new List<Vector3>();
+
+    public AIDifficultySettings difficultySettings;
+    private int _currentDifficultyNdx = 0;
+    public AIDifficultySetting currentDifficulty;
+
+    private bool spawnOnDeath = false;
+
+    public delegate void OnEnemyDied();
+    public event OnEnemyDied EnemyDied;
 
     protected override void Awake()
     {
         base.Awake();
 
-        _enemies = new List<PooledObject>();
-        _spawnCountdown = new CountdownTimer(spawnInterval);
+        // _enemies = new List<PooledObject>();
+        _spawnCountdown = new CountdownTimer(spawnIntervalS);
+        _difficultyCountdown = new CountdownTimer();
     }
 
-    private void Start()
+    public void Init()
     {
-        SpawnEnemy(spawnZones[0]);  // TODO: Fix this
+        // SpawnEnemy(spawnZones[0]);  // TODO: Fix this
+        _currentDifficultyNdx = 0;
 
-        _spawnCountdown.Start();
+        _spawnCountdown.Stop();
+        _difficultyCountdown.Stop();
+
+        difficultyIntervalS = difficultySettings.difficultySettings[_currentDifficultyNdx].timeSeconds;
+        maxEnemies = difficultySettings.difficultySettings[_currentDifficultyNdx].maxEnemies;
+        spawnIntervalS = difficultySettings.difficultySettings[_currentDifficultyNdx].spawnIntervalSeconds;
+
+        currentDifficulty = difficultySettings.difficultySettings[_currentDifficultyNdx];
+
+        _spawnCountdown.Start(spawnIntervalS);
+        _difficultyCountdown.Start(difficultyIntervalS);
+    }
+
+    public override void Clear()
+    {
+        base.Clear();
+
+        foreach (var zone in spawnZones)
+        {
+            foreach (var spawn in zone.spawns)
+                spawn.Free();
+            foreach (var destination in zone.destinations)
+                destination.Free();
+        }
     }
 
     private void OnEnable()
     {
         _spawnCountdown.Timeout += OnSpawnCountdown;
+        _difficultyCountdown.Timeout += OnDifficultyCountdown;
         // Projectile.EnvironmentHit += OnEnvironmentHit;
     }
 
     private void OnDisable()
     {
         _spawnCountdown.Timeout -= OnSpawnCountdown;
+        _difficultyCountdown.Timeout -= OnDifficultyCountdown;
         // Projectile.EnvironmentHit -= OnEnvironmentHit;
     }
 
     private void Update()
     {
         _spawnCountdown.Update(Time.deltaTime);
+        _difficultyCountdown.Update(Time.deltaTime);
         // if (LiveSize() < spawns.Length && _spawnEnemy)
         // {
         //     
@@ -170,6 +210,8 @@ public class AISystem : PooledObject.ObjectPool
 
     private void SpawnEnemy(SpawnZone spawnZone)
     {
+        Debug.LogWarning("SPAWN NEW ENEMEY!!!");
+
         var spawn = spawnZone.GetAvailableSpawn();
         if (spawn is null)
         {
@@ -178,7 +220,7 @@ public class AISystem : PooledObject.ObjectPool
         }
 
         var enemy = Create(spawn.transform.position, spawn.transform.rotation);
-        _enemies.Add(enemy);
+        // _enemies.Add(enemy);
 
         var ai = enemy.gameObject.GetComponent<AIBehavior>();
         ai.system = this;
@@ -190,12 +232,24 @@ public class AISystem : PooledObject.ObjectPool
         ai.SetSpawn(spawnZone, spawn);
     }
 
+    public void EmitEnemyDied()
+    {
+        EnemyDied?.Invoke();
+
+        if (spawnOnDeath)
+        {
+            spawnOnDeath = false;
+            OnSpawnCountdown();
+        }
+    }
+
     private void OnSpawnCountdown()
     {
         // Debug.Log($"{GetType().Name}.OnSpawnCountdown: Countdown timeout.");
         if (LiveSize() >= maxEnemies)
         {
             // _spawnCountdown.Stop(); // TODO: This is only temporary
+            spawnOnDeath = true;
             return;
         }
 
@@ -210,30 +264,50 @@ public class AISystem : PooledObject.ObjectPool
         SpawnEnemy(spawnZone);  // TODO: Fix this
     }
 
-    private void OnEnvironmentHit(Vector3 position)
+    private void OnDifficultyCountdown()
     {
-        debugDraw.Add(position);
+        if (_currentDifficultyNdx >= difficultySettings.difficultySettings.Count - 1)
+            return;
 
-        const float hitRadius = 3.0f;  // TODO: Put this somewhere else?
-        foreach (var enemy in _enemies)
-        {
-            var aiPos = enemy.transform.position;
-            var aiHitDelta = hitRadius - Vector3.Distance(position, aiPos);
-            if (aiHitDelta <= 0.0f)
-                continue;
+        _currentDifficultyNdx += 1;
 
-            var dmgFactor = Mathf.Max(0.0f, aiHitDelta) / hitRadius;
-            var dmgPercentage = 0.5f * dmgFactor;
+        _spawnCountdown.Stop();
+        _difficultyCountdown.Stop();
 
-            var ai = enemy.GetComponent<AIBehavior>();
-            ai.health.TakeDamage(dmgPercentage);
+        difficultyIntervalS = difficultySettings.difficultySettings[_currentDifficultyNdx].timeSeconds;
+        maxEnemies = difficultySettings.difficultySettings[_currentDifficultyNdx].maxEnemies;
+        spawnIntervalS = difficultySettings.difficultySettings[_currentDifficultyNdx].spawnIntervalSeconds;
 
-            Debug.Log($"-------- Enemy-{enemy.gameObject.name} --------");
-            Debug.Log($"aiHitDelta: {aiHitDelta}");
-            Debug.Log($"dmgFactor: {dmgFactor}");
-            Debug.Log($"dmgPercentage: {dmgPercentage}");
-        }
+        currentDifficulty = difficultySettings.difficultySettings[_currentDifficultyNdx];
+
+        _spawnCountdown.Start(spawnIntervalS);
+        _difficultyCountdown.Start(difficultyIntervalS);
     }
+
+    // private void OnEnvironmentHit(Vector3 position)
+    // {
+    //     debugDraw.Add(position);
+    //
+    //     const float hitRadius = 3.0f;  // TODO: Put this somewhere else?
+    //     foreach (var enemy in _enemies)
+    //     {
+    //         var aiPos = enemy.transform.position;
+    //         var aiHitDelta = hitRadius - Vector3.Distance(position, aiPos);
+    //         if (aiHitDelta <= 0.0f)
+    //             continue;
+    //
+    //         var dmgFactor = Mathf.Max(0.0f, aiHitDelta) / hitRadius;
+    //         var dmgPercentage = 0.5f * dmgFactor;
+    //
+    //         var ai = enemy.GetComponent<AIBehavior>();
+    //         ai.health.TakeDamage(dmgPercentage);
+    //
+    //         Debug.Log($"-------- Enemy-{enemy.gameObject.name} --------");
+    //         Debug.Log($"aiHitDelta: {aiHitDelta}");
+    //         Debug.Log($"dmgFactor: {dmgFactor}");
+    //         Debug.Log($"dmgPercentage: {dmgPercentage}");
+    //     }
+    // }
 
     private void OnDrawGizmos()
     {

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 
@@ -15,8 +16,10 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
     public bool enableDebugMode = false;
     public Vector3 debugPosition = new(0.0f, -3.0f, -40.0f);
 
-    // public EyeDetector eyeDetector;
-    public EyeDetectorThreaded eyeDetector;
+    public bool threaded = false;
+    public EyeDetector eyeDetector;
+    public EyeDetectorThreaded eyeDetectorThreaded;
+
     [Range(0.0f, 0.99f)]
     public float filterStrength = 0.5f;
     [Range(1.0f, 3.0f)]
@@ -49,6 +52,12 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
     //     rightEyeDiffMax = float.MinValue;
     // }
 
+    private void Awake()
+    {
+        eyeDetector.activate = !threaded;
+        eyeDetectorThreaded.activate = threaded;
+    }
+
     private void Start()
     {
         _camera = GetComponent<Camera>();
@@ -58,7 +67,7 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
     {
         if (enableDebugMode)
         {
-            _camera.transform.position = debugPosition;
+            _camera.transform.position = Vector3.Lerp(_camera.transform.position, debugPosition, 0.01f);
         }
         else
         {
@@ -90,13 +99,22 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
             //     filterStrength = filterStrengthFactor;
             // }
 
-            rightEyeCM = Vector3.Lerp(rightEyeCM, eyeDetector.rightEyeCMUpdate, 1.0f - filterStrength);
-            leftEyeCM = Vector3.Lerp(leftEyeCM, eyeDetector.leftEyeCMUpdate, 1.0f - filterStrength);
+            if (threaded)
+            {
+                rightEyeCM = Vector3.Lerp(rightEyeCM, eyeDetectorThreaded.rightEyeCMUpdate, 1.0f - filterStrength);
+                leftEyeCM = Vector3.Lerp(leftEyeCM, eyeDetectorThreaded.leftEyeCMUpdate, 1.0f - filterStrength);
+            }
+            else
+            {
+                rightEyeCM = Vector3.Lerp(rightEyeCM, eyeDetector.rightEyeCMUpdate, 1.0f - filterStrength);
+                leftEyeCM = Vector3.Lerp(leftEyeCM, eyeDetector.leftEyeCMUpdate, 1.0f - filterStrength);    
+            }
 
             var cameraPosition = _camera.transform.position;
             cameraPosition.x = rightEyeCM.x * moveFactorX;
             cameraPosition.y = rightEyeCM.y * moveFactorY;
-            cameraPosition.z = -40.0f;//rightEyeCM.z * moveFactorZ;
+            cameraPosition.z = rightEyeCM.z * moveFactorZ;
+            // cameraPosition.z = -40.0f;
             _camera.transform.position = cameraPosition;
         }
 

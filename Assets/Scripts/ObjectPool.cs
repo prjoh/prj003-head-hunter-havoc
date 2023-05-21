@@ -125,6 +125,23 @@ public abstract partial class PooledObject
 
             _numLiveObjects -= 1;
         }
+
+        public virtual void Clear()
+        {
+            _firstAvailable = _objectInstances[0].GetComponent<PooledObject>();
+
+            for (var i = 0; i < poolSize - 1; i++)
+            {
+                var current = _objectInstances[i].GetComponent<PooledObject>();
+                var next = _objectInstances[i+1].GetComponent<PooledObject>();
+                current.SetNextPooledObject(next);
+                current.gameObject.SetActive(false);
+            }
+
+            var last = _objectInstances[poolSize - 1].GetComponent<PooledObject>();
+            last.SetNextPooledObject(null);
+            last.gameObject.SetActive(false);
+        }
     }
 }
 

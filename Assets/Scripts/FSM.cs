@@ -5,9 +5,17 @@ public abstract class State
 {
     public readonly string name;
 
+    private FiniteStateMachine _fsm;
+
+
     public State(string name)
     {
         this.name = name;
+    }
+
+    public void SetStateMachine(FiniteStateMachine fsm)
+    {
+        _fsm = fsm;
     }
 
     public virtual void Enter() {}
@@ -29,6 +37,8 @@ public class FiniteStateMachine
     public void AddState(State state)
     {
         _states.Add(state.name, state);
+
+        state.SetStateMachine(this);
     }
 
     public void SwitchState(string name)

@@ -54,6 +54,8 @@ public class EyeDetectorThreaded : MonoBehaviour
     private readonly object _detectLandmarkResultLock = new object(); // lock object for _detectLandmarkResult list
     private readonly object _detectLock = new object(); // lock object for _detectLandmarkResult list
 
+    public bool activate = false;
+
     private void Awake()
     {
         _detectLandmarkResult = new List<Vector2>();
@@ -113,6 +115,9 @@ public class EyeDetectorThreaded : MonoBehaviour
 
     private void Update()
     {
+        if (!activate)
+            return;
+
         if (!_initDone || !_webCamTexture.isPlaying || !_webCamTexture.didUpdateThisFrame)
             return;
 

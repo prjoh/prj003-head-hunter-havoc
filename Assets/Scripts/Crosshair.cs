@@ -40,14 +40,21 @@ public class Crosshair : MonoBehaviour
         if (Physics.Raycast(_ray, out var hitObject, 200.0f, mask.value))
         {
             // Debug.Log($"Hit something: {hitObject.collider.gameObject.name}");
-            sphere2.position = hitObject.point;
+            // sphere2.position = hitObject.point;
+            sphere2.position = hitObject.point - _ray.direction * 2.5f;
 
-            var l1p0 = line1.GetPosition(0);
-            var l1p1 = l1p0 + (line1.gameObject.transform.InverseTransformPoint(sphere2.position) - l1p0).normalized * 25.0f;
-            var l2p0 = line2.GetPosition(0);
-            var l2p1 = l2p0 + (line2.gameObject.transform.InverseTransformPoint(sphere2.position) - l2p0).normalized * 25.0f;
-            line1.SetPosition(1, l1p1);
-            line2.SetPosition(1, l2p1);
+            // var toCamera = (_camera.position - hitObject.point).normalized;
+            // Debug.DrawRay(hitObject.point, toCamera * 10.0f, Color.magenta, 3.0f);
+            // Debug.DrawRay(hitObject.point, hitObject.normal.normalized * 10.0f, Color.green, 3.0f);
+            // // sphere2.rotation = Quaternion.LookRotation(toCamera, Vector3.up);
+            // sphere2.rotation = Quaternion.LookRotation(hitObject.normal, Vector3.up);
+
+            // var l1p0 = line1.GetPosition(0);
+            // var l1p1 = l1p0 + (line1.gameObject.transform.InverseTransformPoint(sphere2.position) - l1p0).normalized * 25.0f;
+            // var l2p0 = line2.GetPosition(0);
+            // var l2p1 = l2p0 + (line2.gameObject.transform.InverseTransformPoint(sphere2.position) - l2p0).normalized * 25.0f;
+            // line1.SetPosition(1, l1p1);
+            // line2.SetPosition(1, l2p1);
         }
     }
 

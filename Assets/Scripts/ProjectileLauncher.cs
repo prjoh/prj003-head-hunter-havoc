@@ -72,14 +72,26 @@ public class ProjectileLauncher : MonoBehaviour
             }
 
             Explosion?.Invoke(_collisionEvents[i].intersection, targetTag);
-            // if (other.CompareTag(targetTag))
-            // {
-            //     if (targetTag == "Enemy")
-            //     {
-            //         var ai = other.gameObject.GetComponent<AIBehavior>();
-            //         ai.health.TakeDamage(0.5f);
-            //     }
-            // }
+
+            if (other.CompareTag(targetTag))
+            {
+                if (targetTag == "Enemy")
+                {
+                    var ai = other.gameObject.GetComponent<AIBehavior>();
+                    ai.health.TakeDamage(0.5f);
+                }
+                else if (targetTag.Equals("Player"))
+                {
+                    var player = other.gameObject.GetComponent<Player>();
+                    player.TakeDamage(0.05f, -_collisionEvents[i].velocity.normalized);
+
+                    var ai = transform.root.GetComponent<AIBehavior>();
+                    if (ai.health.IsAlive() && !DamageIndicatorSystem.CheckIfObjectInSight(transform.parent))
+                    {
+                        DamageIndicatorSystem.CreateIndicator(transform.parent);
+                    }
+                }
+            }
         }
     }
 }

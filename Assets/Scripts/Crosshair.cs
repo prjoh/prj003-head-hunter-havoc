@@ -17,6 +17,14 @@ public class Crosshair : MonoBehaviour
     private Transform _camera;
     private Ray _ray;
 
+    private MenuButton _hoveredButton;
+    private GameManager _gameManager;
+
+    private void Awake()
+    {
+        _gameManager = FindObjectOfType<GameManager>();
+    }
+
     private void Start()
     {
         _camera = Camera.main.transform;
@@ -43,6 +51,24 @@ public class Crosshair : MonoBehaviour
             // sphere2.position = hitObject.point;
             sphere2.position = hitObject.point - _ray.direction * 2.5f;
 
+            var obj = hitObject.transform.gameObject;
+            if (obj.CompareTag("UIButton"))
+            {
+                if (_hoveredButton is null || _hoveredButton.gameObject != obj)
+                {
+                    if (_hoveredButton is not null)
+                        _hoveredButton.OnHoverExit();
+
+                    _hoveredButton = obj.GetComponent<MenuButton>();
+                    _hoveredButton.OnHoverEnter();
+                }
+            }
+            else if (_hoveredButton is not null)
+            {
+                _hoveredButton.OnHoverExit();
+                _hoveredButton = null;
+            }
+
             // var toCamera = (_camera.position - hitObject.point).normalized;
             // Debug.DrawRay(hitObject.point, toCamera * 10.0f, Color.magenta, 3.0f);
             // Debug.DrawRay(hitObject.point, hitObject.normal.normalized * 10.0f, Color.green, 3.0f);
@@ -55,6 +81,11 @@ public class Crosshair : MonoBehaviour
             // var l2p1 = l2p0 + (line2.gameObject.transform.InverseTransformPoint(sphere2.position) - l2p0).normalized * 25.0f;
             // line1.SetPosition(1, l1p1);
             // line2.SetPosition(1, l2p1);
+        }
+
+        if (Input.GetMouseButtonDown(0) && _hoveredButton is not null && _gameManager.fsm.CurrentState() != "GameState")
+        {
+            _hoveredButton.onClick?.Invoke();
         }
     }
 

@@ -77,9 +77,10 @@ public class ProjectileLauncher : MonoBehaviour
             {
                 if (targetTag == "Enemy")
                 {
-                    var ai = other.gameObject.GetComponent<AIBehavior>();
-                    ai.health.TakeDamage(0.5f);
+                    // var ai = other.gameObject.GetComponent<AIBehavior>();
+                    // ai.health.TakeDamage(0.5f);
                 }
+                // TODO: Create OnExplosion for Player?
                 else if (targetTag.Equals("Player"))
                 {
                     var player = other.gameObject.GetComponent<Player>();

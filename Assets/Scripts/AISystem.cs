@@ -108,6 +108,8 @@ public class AISystem : PooledObject.ObjectPool
 
     private bool spawnOnDeath = false;
 
+    private GameManager _gameManager;
+
     public delegate void OnEnemyDied();
     public event OnEnemyDied EnemyDied;
 
@@ -115,6 +117,8 @@ public class AISystem : PooledObject.ObjectPool
     {
         base.Awake();
 
+        _gameManager = FindObjectOfType<GameManager>();
+        
         // _enemies = new List<PooledObject>();
         _spawnCountdown = new CountdownTimer(spawnIntervalS);
         _difficultyCountdown = new CountdownTimer();
@@ -142,6 +146,9 @@ public class AISystem : PooledObject.ObjectPool
     {
         base.Clear();
 
+        _spawnCountdown.Stop();
+        _difficultyCountdown.Stop();
+
         foreach (var zone in spawnZones)
         {
             foreach (var spawn in zone.spawns)
@@ -167,6 +174,9 @@ public class AISystem : PooledObject.ObjectPool
 
     private void Update()
     {
+        if (_gameManager.fsm.CurrentState() != "GameState")
+            return;
+
         _spawnCountdown.Update(Time.deltaTime);
         _difficultyCountdown.Update(Time.deltaTime);
         // if (LiveSize() < spawns.Length && _spawnEnemy)

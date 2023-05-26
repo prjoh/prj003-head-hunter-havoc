@@ -1,0 +1,36 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+
+public static class SaveDataManager
+{
+    public static void SaveJsonData(IEnumerable<ISaveable> a_Saveables)
+    {
+        var sd = new SaveData();
+        foreach (var saveable in a_Saveables)
+        {
+            saveable.PopulateSaveData(sd);
+        }
+
+        if (FileManager.WriteToFile("SaveData.dat", sd.ToJson()))
+        {
+            Debug.Log("Save successful");
+        }
+    }
+    
+    public static void LoadJsonData(IEnumerable<ISaveable> a_Saveables)
+    {
+        if (FileManager.LoadFromFile("SaveData.dat", out var json))
+        {
+            var sd = new SaveData();
+            sd.LoadFromJson(json);
+
+            foreach (var saveable in a_Saveables)
+            {
+                saveable.LoadFromSaveData(sd);
+            }
+            
+            Debug.Log("Load complete");
+        }
+    }
+}

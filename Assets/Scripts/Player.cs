@@ -14,14 +14,18 @@ public class Player : MonoBehaviour
     public ProjectileLauncher projectileLauncher; 
     public ProjectileLauncher projectileLauncher2;
 
+    private GameManager _gameManager;
+
     private void Awake()
     {
         _health = new HealthComponent();
 
+        _gameManager = FindObjectOfType<GameManager>();
+
         // _projectileColor = new Color(0, 48, 191) * 0.0085f;
         // _projectilePool = FindObjectOfType<ProjectilePool>();
         // if (_projectilePool == null)
-            // Debug.LogError($"{GetType().Name}.Awake: No ProjectilePool found! Please make sure a ProjectilePool is in your Scene.");
+        // Debug.LogError($"{GetType().Name}.Awake: No ProjectilePool found! Please make sure a ProjectilePool is in your Scene.");
     }
 
     public void Init()
@@ -52,7 +56,7 @@ public class Player : MonoBehaviour
         leftFrom.rotation = Quaternion.LookRotation(leftDirection);
         rightFrom.rotation = Quaternion.LookRotation(rightDirection);
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && _gameManager.fsm.CurrentState() == "GameState" && !_gameManager.pauseMenu.Paused())
         {
             projectileLauncher.Shoot();
             projectileLauncher2.Shoot();

@@ -52,10 +52,14 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
     //     rightEyeDiffMax = float.MinValue;
     // }
 
+    private GameManager _gameManager;
+
     private void Awake()
     {
         eyeDetector.activate = !threaded;
         eyeDetectorThreaded.activate = threaded;
+
+        _gameManager = FindObjectOfType<GameManager>();
     }
 
     private void Start()
@@ -65,6 +69,9 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (_gameManager.pauseMenu.Paused())
+            return;
+
         if (enableDebugMode)
         {
             _camera.transform.position = Vector3.Lerp(_camera.transform.position, debugPosition, 0.01f);

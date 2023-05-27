@@ -128,6 +128,8 @@ public abstract partial class PooledObject
 
         public virtual void Clear()
         {
+            _numLiveObjects = 0;
+
             _firstAvailable = _objectInstances[0].GetComponent<PooledObject>();
 
             for (var i = 0; i < poolSize - 1; i++)

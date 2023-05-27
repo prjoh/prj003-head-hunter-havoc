@@ -14,8 +14,6 @@ public class ScoreMenu : Menu3D
     public GameObject quitButton;
     public GameObject backButton;
 
-    public ScoreBoard scoreBoard;
-
     public void SetScoreMenuState(ScoreMenuState state)
     {
         switch (state)

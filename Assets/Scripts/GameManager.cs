@@ -88,6 +88,7 @@ public class GameState : State
 
         // Time.timeScale = 1.0f;
 
+        _gameManager.StartCoroutine(FadeMusic(true));
         _gameManager.StartCoroutine(SetPlayerUIVisibility(1.0f));
     }
 
@@ -128,6 +129,8 @@ public class GameState : State
 
         _gameManager.StartCoroutine(SetPlayerUIVisibility(0.0f));
         _gameManager.aiSystem.EnemyDied -= OnEnemyDied;
+        
+        _gameManager.StartCoroutine(FadeMusic(false));
     }
 
     IEnumerator SetPlayerUIVisibility(float visibility)
@@ -137,6 +140,43 @@ public class GameState : State
             _playerUICanvasGroup.alpha = ExtensionMethods.Lerp(_playerUICanvasGroup.alpha, visibility, 1.5f * Time.deltaTime);
             yield return null;
         }
+
+        _playerUICanvasGroup.alpha = visibility;
+    }
+
+    IEnumerator FadeMusic(bool fadeIn)
+    {
+        float fadeTo, fadeFrom;
+        if (fadeIn)
+        {
+            fadeFrom = 0.0f;
+            fadeTo = 0.55f;
+
+            _gameManager.music.volume = 0.0f;
+
+            yield return new WaitForSeconds(2.0f);
+
+            _gameManager.music.Play();
+        }
+        else
+        {
+            fadeFrom = 0.55f;
+            fadeTo = 0.0f;
+        }
+
+        const float time = 2.0f;
+        var elapsed = 0.0f;
+        while (elapsed < time)
+        {
+            elapsed += Time.deltaTime;
+            _gameManager.music.volume = ExtensionMethods.Lerp(fadeFrom, fadeTo, elapsed / time);
+            yield return null;
+        }
+
+        if (!fadeIn)
+            _gameManager.music.Stop();
+
+        _gameManager.music.volume = fadeTo;
     }
 }
 
@@ -161,6 +201,8 @@ public class GameOverState : State
 
         _gameManager.scoreMenu.SetScoreMenuState(ScoreMenu.ScoreMenuState.EDITABLE);
         _gameManager.scoreMenu.Show();
+
+        _gameManager.menuSlideSfx.Play();
 
         _gameManager.SaveJsonData();
     }
@@ -197,6 +239,9 @@ public class GameManager : MonoBehaviour
     public readonly FiniteStateMachine fsm = new ();
 
     private List<ISaveable> saveables = new List<ISaveable>();
+
+    public AudioSource menuSlideSfx;
+    public AudioSource music;
 
     private void Awake()
     {

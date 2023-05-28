@@ -14,6 +14,9 @@ public class Player : MonoBehaviour
     public ProjectileLauncher projectileLauncher; 
     public ProjectileLauncher projectileLauncher2;
 
+    public AudioSource shootSound;
+    public AudioSource hitSound;
+
     private GameManager _gameManager;
 
     private void Awake()
@@ -36,6 +39,8 @@ public class Player : MonoBehaviour
 
     public void TakeDamage(float percentage, Vector3 direction)
     {
+        hitSound.Play();
+
         _health.TakeDamage(percentage);
         healthBar.value = _health.GetPercentage();
         Debug.Log($"Player Health: {_health.GetPercentage()}");
@@ -58,6 +63,7 @@ public class Player : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0) && _gameManager.fsm.CurrentState() == "GameState" && !_gameManager.pauseMenu.Paused())
         {
+            shootSound.Play();
             projectileLauncher.Shoot();
             projectileLauncher2.Shoot();
         }

@@ -21,6 +21,8 @@ public class ProjectileLauncher : MonoBehaviour
     public bool enableHitVFX = true;
     private ProjectileHit _projectileHitVFX;
 
+    private AudioSource _explosionSound;
+
     private List<ParticleCollisionEvent> _collisionEvents;
 
     public delegate void OnExplosion(Vector3 position, string targetTag);
@@ -28,6 +30,8 @@ public class ProjectileLauncher : MonoBehaviour
 
     private void Awake()
     {
+        _explosionSound = GetComponent<AudioSource>();
+
         _collisionEvents = new List<ParticleCollisionEvent>();
 
         var col = projectileVFX.collision;
@@ -72,6 +76,7 @@ public class ProjectileLauncher : MonoBehaviour
             }
 
             Explosion?.Invoke(_collisionEvents[i].intersection, targetTag);
+            _explosionSound.Play();
 
             if (other.CompareTag(targetTag))
             {

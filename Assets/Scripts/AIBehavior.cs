@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -153,11 +152,16 @@ public class FightingState : State
         
         for (var i = 0; i < 3; i++)
         {
+            if (!_ai.health.IsAlive())
+                yield break;
+
             var direction = (_ai.player.transform.position - projectileLauncherTransform.transform.position).normalized;
             projectileLauncherTransform.rotation = Quaternion.LookRotation(direction);
 
             _ai.animator.Play("Shoot", -1, 0.35f);
             _ai.projectileLauncher.Shoot();
+
+            _ai.shootSound.Play();
 
             yield return new WaitForSeconds(1.3f);
         }
@@ -186,6 +190,9 @@ public class DeathState : State
     {
         _deathTimer.Timeout += Exit;
         _deathTimer.Start();
+
+        _ai.deathSound.pitch = Random.Range(1.8f, 2.0f);
+        _ai.deathSound.Play();
 
         _ai.system.EmitEnemyDied();
     }
@@ -224,6 +231,13 @@ public class AIBehavior : PooledObject
     [HideInInspector] public AISystem.SpawnZone zone = null;
     [HideInInspector] public ExclusiveColliderZone spawn = null;
     [HideInInspector] public ExclusiveColliderZone destination = null;
+    
+    // pitch: 1.1 ~ 1.7
+    // volume: 0.0 ~ 0.4
+    public AudioSource hitSound;
+    public AudioSource shootSound;
+    public AudioSource hurtSound;
+    public AudioSource deathSound;
 
     protected override void OnConstruction()
     {
@@ -313,6 +327,8 @@ public class AIBehavior : PooledObject
         if (!health.IsAlive())
             return;
 
+        // aiHitDelta = 4.0f - 0.0f
+        // 0.0 ~ 0.5
         const float hitRadius = 4.0f;  // TODO: Put this somewhere else?
         var aiPos = transform.position;
         var aiHitDelta = hitRadius - Vector3.Distance(position, aiPos);
@@ -323,6 +339,13 @@ public class AIBehavior : PooledObject
         var dmgPercentage = 0.5f * dmgFactor;
 
         health.TakeDamage(dmgPercentage);
+
+        hitSound.volume = ExtensionMethods.Map(dmgPercentage, 0.0f, 0.5f, 0.0f, 0.6f);
+        hitSound.pitch = 1.7f - ExtensionMethods.Map(dmgPercentage, 0.0f, 0.5f, 0.0f, 0.3f);
+        hitSound.Play();
+        
+        hurtSound.pitch = Random.Range(1.5f, 2.0f);
+        hurtSound.Play();
 
         if (!health.IsAlive())
         {

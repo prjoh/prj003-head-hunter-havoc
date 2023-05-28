@@ -112,7 +112,10 @@ public class GameState : State
         }
 
         if (!_gameManager.player.IsAlive())
+        {
+            _gameManager.deathSound.Play();
             _gameManager.fsm.SwitchState("GameOverState");
+        }
     }
 
     private void OnEnemyDied()
@@ -242,6 +245,7 @@ public class GameManager : MonoBehaviour
 
     public AudioSource menuSlideSfx;
     public AudioSource music;
+    public AudioSource deathSound;
 
     private void Awake()
     {

@@ -91,6 +91,7 @@ public class AISystem : PooledObject.ObjectPool
     public float spawnIntervalS = 5.0f;
     public float difficultyIntervalS = 10.0f;
     public int maxEnemies = 5;
+    public int spawnsPerCycle = 1;
 
     // public ExclusiveColliderZone[] aiDestinations;
 
@@ -135,6 +136,7 @@ public class AISystem : PooledObject.ObjectPool
         difficultyIntervalS = difficultySettings.difficultySettings[_currentDifficultyNdx].timeSeconds;
         maxEnemies = difficultySettings.difficultySettings[_currentDifficultyNdx].maxEnemies;
         spawnIntervalS = difficultySettings.difficultySettings[_currentDifficultyNdx].spawnIntervalSeconds;
+        spawnsPerCycle = difficultySettings.difficultySettings[_currentDifficultyNdx].spawnsPerCycle;
 
         currentDifficulty = difficultySettings.difficultySettings[_currentDifficultyNdx];
 
@@ -233,7 +235,7 @@ public class AISystem : PooledObject.ObjectPool
         // _enemies.Add(enemy);
 
         var ai = enemy.gameObject.GetComponent<AIBehavior>();
-        ai.system = this;
+        // ai.system = this;
 
         // TODO: Instead, give reference of SpawnZone to AIBehavior
         //   An AIBehavior allocates a spawn ExclusiveColliderZone, either it is freed when exiting or we call free on death
@@ -263,15 +265,18 @@ public class AISystem : PooledObject.ObjectPool
             return;
         }
 
-        // Debug.Log($"{GetType().Name}.OnSpawnCountdown: Spawning Enemy!");
-        var spawnZone = GetNextSpawn();
-        if (spawnZone is null)
+        for (int i = 0; i < spawnsPerCycle; i++)
         {
-            Debug.LogError("Unable to get valid SpawnZone!");
-            return;
-        }
+            // Debug.Log($"{GetType().Name}.OnSpawnCountdown: Spawning Enemy!");
+            var spawnZone = GetNextSpawn();
+            if (spawnZone is null)
+            {
+                Debug.LogError("Unable to get valid SpawnZone!");
+                return;
+            }
 
-        SpawnEnemy(spawnZone);  // TODO: Fix this
+            SpawnEnemy(spawnZone);  // TODO: Fix this
+        }
     }
 
     private void OnDifficultyCountdown()
@@ -292,6 +297,8 @@ public class AISystem : PooledObject.ObjectPool
 
         _spawnCountdown.Start(spawnIntervalS);
         _difficultyCountdown.Start(difficultyIntervalS);
+
+        _gameManager.levelInfo.UpdateLevelInfo("Level " + (_currentDifficultyNdx + 1));
     }
 
     // private void OnEnvironmentHit(Vector3 position)

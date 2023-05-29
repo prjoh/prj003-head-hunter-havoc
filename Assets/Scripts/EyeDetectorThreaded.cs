@@ -56,6 +56,12 @@ public class EyeDetectorThreaded : MonoBehaviour
 
     public bool activate = false;
 
+    public delegate void OnWebcamInit();
+    public static event OnWebcamInit WebcamInit;
+
+    public delegate void OnWebcamFailed();
+    public static event OnWebcamFailed WebcamFailed;
+
     private void Awake()
     {
         _detectLandmarkResult = new List<Vector2>();
@@ -65,7 +71,12 @@ public class EyeDetectorThreaded : MonoBehaviour
     {
         var path = Utils.getFilePath("DlibFaceLandmarkDetector/" + dlibShapePredictorName + ".dat");
         _faceLandmarkDetector = new FaceLandmarkDetector(path);
+        
+        // StartCoroutine(_Initialize());
+    }
 
+    public void Initialize()
+    {
         StartCoroutine(_Initialize());
     }
 
@@ -80,6 +91,7 @@ public class EyeDetectorThreaded : MonoBehaviour
         else
         {
             Debug.LogError("No camera device exists!");
+            WebcamFailed?.Invoke();
             yield break;
         }
 
@@ -111,6 +123,8 @@ public class EyeDetectorThreaded : MonoBehaviour
         // Start the thread that reads from _colors and writes to _detectLandmarkResult
         var thread = new Thread(EyeDetectWorker);
         thread.Start();
+
+        WebcamInit?.Invoke();
     }
 
     private void Update()

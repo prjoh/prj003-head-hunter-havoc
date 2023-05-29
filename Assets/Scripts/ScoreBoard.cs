@@ -14,13 +14,13 @@ public class ScoreBoard : MonoBehaviour, ISaveable
 
     private List<GameObject> _scoreEntries = new ();
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Return))
-        {
-           UpdateScoreboard(Random.Range(100, 9000), "00:00.0");
-        }
-    }
+    // private void Update()
+    // {
+    //     if (Input.GetKeyDown(KeyCode.Return))
+    //     {
+    //        UpdateScoreboard(Random.Range(100, 9000), "00:00.0");
+    //     }
+    // }
 
     private void RemoveHighlight()
     {

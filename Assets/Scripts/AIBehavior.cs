@@ -86,7 +86,7 @@ public class FightingState : State
     public FightingState(string name, AIBehavior ai) : base(name)
     {
         _ai = ai;
-        _shootTimer = new CountdownTimer(3.0f);
+        _shootTimer = new CountdownTimer();
         _shootTimer.Stop();
         _projectileColor = new Color(191, 46, 0) * 0.0115f;
     }
@@ -96,7 +96,7 @@ public class FightingState : State
         _ai.animator.Play("Idle");
 
         _shootTimer.Timeout += OnShootTimeout;
-        _shootTimer.Start();
+        _shootTimer.Start(_ai.shootCooldown + Random.Range(-0.25f, 0.25f));
     }
 
     public override void Update()
@@ -150,7 +150,7 @@ public class FightingState : State
         projectileLauncherTransform.SetParent(_ai.gameObject.transform, true);
         projectileLauncherTransform.localScale = Vector3.one;
         
-        for (var i = 0; i < 3; i++)
+        for (var i = 0; i < _ai.shotsFired; i++)
         {
             if (!_ai.health.IsAlive())
                 yield break;
@@ -231,6 +231,10 @@ public class AIBehavior : PooledObject
     [HideInInspector] public AISystem.SpawnZone zone = null;
     [HideInInspector] public ExclusiveColliderZone spawn = null;
     [HideInInspector] public ExclusiveColliderZone destination = null;
+
+    public float shootCooldown;
+    public int shotsFired;
+    public int healthMax;
     
     // pitch: 1.1 ~ 1.7
     // volume: 0.0 ~ 0.4
@@ -259,6 +263,8 @@ public class AIBehavior : PooledObject
         projectileLauncherTransform.localScale = Vector3.one;
         projectileLauncherTransform.localPosition = Vector3.zero;
         projectileLauncherTransform.localRotation = Quaternion.identity;
+
+        system = FindObjectOfType<AISystem>();
     }
 
     protected override void Init()
@@ -273,7 +279,11 @@ public class AIBehavior : PooledObject
 
         player = GameObject.FindWithTag("Player");
 
-        health.Init();
+        shootCooldown = system.currentDifficulty.shootCooldown;
+        shotsFired = system.currentDifficulty.shotsFired;
+        healthMax = system.currentDifficulty.health;
+
+        health.Init(healthMax);
         ragdollController.EnableAnimator();
 
         fsm.SwitchState("Idle");

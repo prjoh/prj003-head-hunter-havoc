@@ -126,6 +126,13 @@ public class OffAxisPerspectiveProjection : MonoBehaviour
         }
 
         eyePosition = _camera.transform.position;
+
+        if (eyePosition == Vector3.zero)
+        {
+            _camera.transform.position = debugPosition;
+            eyePosition = debugPosition;
+        }
+
         _camera.projectionMatrix = PerspectiveOffCenter(eyePosition, left, right, bottom, top, _camera.nearClipPlane, _camera.farClipPlane);
     }
 

@@ -2,12 +2,19 @@
 
 public class HealthComponent
 {
-    private const int MaxValue = 100;
+    private int _maxValue;
     private int _value;
 
-    public void Init()
+    public HealthComponent(int maxValue = 100)
     {
-        _value = MaxValue;
+        _maxValue = maxValue;
+        _value = _maxValue;
+    }
+
+    public void Init(int maxValue = 100)
+    {
+        _maxValue = maxValue;
+        _value = _maxValue;
     }
 
     public bool IsAlive()
@@ -17,11 +24,11 @@ public class HealthComponent
 
     public float GetPercentage()
     {
-        return (float)_value / (float)MaxValue;
+        return (float)_value / (float)_maxValue;
     }
 
     public void TakeDamage(float percentage)
     {
-        _value -= (int)(MaxValue * percentage);
+        _value -= (int)(_maxValue * percentage);
     }
 }

@@ -13,5 +13,9 @@ MonoBehaviour:
   m_Name: AIDifficulty1
   m_EditorClassIdentifier: 
   timeSeconds: 60
-  spawnIntervalSeconds: 8
+  spawnIntervalSeconds: 6
   maxEnemies: 3
+  spawnsPerCycle: 1
+  shootCooldown: 3
+  shotsFired: 3
+  health: 100

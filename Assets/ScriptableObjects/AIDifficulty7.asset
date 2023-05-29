@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2dafccab7f384ab480141a8b7abc9169, type: 3}
-  m_Name: AIDifficulty2
+  m_Name: AIDifficulty7
   m_EditorClassIdentifier: 
   timeSeconds: 45
-  spawnIntervalSeconds: 6
-  maxEnemies: 5
-  spawnsPerCycle: 1
-  shootCooldown: 3
-  shotsFired: 3
-  health: 100
+  spawnIntervalSeconds: 4.5
+  maxEnemies: 16
+  spawnsPerCycle: 3
+  shootCooldown: 2.5
+  shotsFired: 4
+  health: 115

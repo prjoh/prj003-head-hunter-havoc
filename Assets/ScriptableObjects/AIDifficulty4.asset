@@ -12,6 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dafccab7f384ab480141a8b7abc9169, type: 3}
   m_Name: AIDifficulty4
   m_EditorClassIdentifier: 
-  timeSeconds: 60
-  spawnIntervalSeconds: 7
+  timeSeconds: 45
+  spawnIntervalSeconds: 5
   maxEnemies: 8
+  spawnsPerCycle: 2
+  shootCooldown: 2.5
+  shotsFired: 3
+  health: 100

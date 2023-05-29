@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UIElements;
 
 
 public class RagdollController : MonoBehaviour
@@ -65,6 +64,8 @@ public class RagdollController : MonoBehaviour
 
     public void EnableAnimator()
     {
+        ragdollRoot.position = ragdollRoot.root.position;
+
         foreach (var joint in _joints)
         {
             joint.enableCollision = false;

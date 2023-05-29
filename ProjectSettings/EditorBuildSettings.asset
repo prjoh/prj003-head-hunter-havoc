@@ -6,9 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/DlibFaceLandmarkDetector/Examples/DlibFaceLandmarkDetectorExample.unity
-    guid: f14b07666e9ee894fac7f94624ef302d
-  - enabled: 1
-    path: Assets/DlibFaceLandmarkDetector/Examples/WebCamTextureExample/WebCamTextureExample.unity
-    guid: d10e63dad123dea49ab251a205ecf64f
+    path: Assets/Scenes/DesertScene.unity
+    guid: 3a087316db5954c70b1cbe7e9d0198da
   m_configObjects: {}

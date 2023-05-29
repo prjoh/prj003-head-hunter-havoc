@@ -5,6 +5,37 @@ using TMPro;
 using UnityEngine;
 
 
+public class IntroState : State
+{
+    private GameManager _gameManager;
+
+    public IntroState(string name, GameManager gameManager) : base(name)
+    {
+        _gameManager = gameManager;
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+
+        _gameManager.introScreen.FadeScreen(IntroScreen.ScreenType.INTRO, true);
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        
+        if (_gameManager.introScreen.initSuccessful)
+            _gameManager.fsm.SwitchState("MainMenuState");
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+    }
+}
+
+
 public class MainMenuState : State
 {
     private GameManager _gameManager;
@@ -31,6 +62,9 @@ public class MainMenuState : State
     public override void Update()
     {
         base.Update();
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+            _gameManager.pauseMenu.TogglePause();
     }
 
     public override void Exit()
@@ -74,7 +108,6 @@ public class GameState : State
         base.Enter();
 
         _gameManager.player.Init();
-        
         _gameManager.aiSystem.Init();
 
         _timePlayed = 0.0f;
@@ -90,6 +123,7 @@ public class GameState : State
 
         _gameManager.StartCoroutine(FadeMusic(true));
         _gameManager.StartCoroutine(SetPlayerUIVisibility(1.0f));
+        _gameManager.levelInfo.UpdateLevelInfo("Level 1");
     }
 
     public override void Update()
@@ -128,7 +162,7 @@ public class GameState : State
         base.Exit();
 
         if (_score > 0)
-            _gameManager.scoreBoard.UpdateScoreboard(_score, _gameManager.timePlayedUI.text);
+            _gameManager.scoreBoard.UpdateScoreboard(_score, _gameManager.timePlayedUI.text.Split(": ")[1]);
 
         _gameManager.StartCoroutine(SetPlayerUIVisibility(0.0f));
         _gameManager.aiSystem.EnemyDied -= OnEnemyDied;
@@ -247,8 +281,12 @@ public class GameManager : MonoBehaviour
     public AudioSource music;
     public AudioSource deathSound;
 
+    public IntroScreen introScreen;
+    public LevelInfo levelInfo;
+
     private void Awake()
     {
+        fsm.AddState(new IntroState("IntroState", this));
         fsm.AddState(new MainMenuState("MainMenuState", this));
         fsm.AddState(new GameState("GameState", this));
         fsm.AddState(new GameOverState("GameOverState", this));
@@ -260,7 +298,8 @@ public class GameManager : MonoBehaviour
     {
         LoadJsonData();
 
-        ShowMenu();
+        // ShowMenu();
+        fsm.SwitchState("IntroState");
     }
 
     public void StartGame()
@@ -296,6 +335,13 @@ public class GameManager : MonoBehaviour
 
     public void LoadJsonData()
     {
-        SaveDataManager.LoadJsonData(saveables);
+        try
+        {
+            SaveDataManager.LoadJsonData(saveables);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("No SaveData found on machine.");
+        }
     }
 }

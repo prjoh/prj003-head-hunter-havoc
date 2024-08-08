@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
+#if UNITY_EDITOR_OSX
 using UnityEditor.iOS.Xcode;
+#endif
 using System.IO;
  
 public class OSXBuildHelper : MonoBehaviour

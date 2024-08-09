@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/unity,windows,linux,macos,jetbrains,rider
-# Edit at https://www.toptal.com/developers/gitignore?templates=unity,windows,linux,macos,jetbrains,rider
+# Created by https://www.toptal.com/developers/gitignore/api/linux,macos,rider,unity,windows,jetbrains,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=linux,macos,rider,unity,windows,jetbrains,visualstudiocode
 
 ### JetBrains ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
@@ -283,6 +283,25 @@ sysinfo.txt
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
+
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -309,8 +328,8 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/unity,windows,linux,macos,jetbrains,rider
-
+# End of https://www.toptal.com/developers/gitignore/api/linux,macos,rider,unity,windows,jetbrains,visualstudiocode
 
 ### CUSTOM ###
-.idea/
+.idea
+.vscode
